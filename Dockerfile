@@ -42,8 +42,8 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
     && chmod -R 775 storage bootstrap/cache
 
 # Installer les dépendances Node et construire les assets
-RUN npm ci --prefer-offline --no-audit --progress=false \
-    && npm run build
+RUN npm install --prefer-offline --no-audit --progress=false && \
+    npm run build
 
 # Exécuter les scripts post-install maintenant que tous les fichiers sont en place
 RUN composer run-script post-autoload-dump --no-interaction \

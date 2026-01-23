@@ -12,8 +12,17 @@ php artisan cache:clear
 php artisan view:clear
 php artisan route:clear
 
+# Afficher les migrations existantes
+echo "=== Liste des migrations ==="
+php artisan migrate:status
+
 # Forcer la réexécution des migrations
+echo "=== Exécution des migrations ==="
 php artisan migrate:fresh --force
+
+# Vérifier que la table sessions existe
+echo "=== Vérification de la table sessions ==="
+php artisan tinker --execute="dd(Schema::hasTable('sessions'));"
 
 # Mettre en cache la configuration pour la production
 php artisan config:cache

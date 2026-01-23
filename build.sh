@@ -12,6 +12,8 @@ php artisan cache:clear
 php artisan view:clear
 php artisan route:clear
 
+# Dans build.sh, avant php artisan migrate --force
+php artisan session:table
 # Exécuter les migrations
 php artisan migrate --force
 

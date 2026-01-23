@@ -12,10 +12,8 @@ php artisan cache:clear
 php artisan view:clear
 php artisan route:clear
 
-# Dans build.sh, avant php artisan migrate --force
-php artisan session:table
-# Exécuter les migrations
-php artisan migrate --force
+# Forcer la réexécution des migrations
+php artisan migrate:fresh --force
 
 # Mettre en cache la configuration pour la production
 php artisan config:cache

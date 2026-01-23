@@ -4,6 +4,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GuestController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,16 +23,22 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Public Templates (for mobile & web without auth)
+Route::get('/public/templates', [TemplateController::class, 'index']);
+
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+    // Profile
+    Route::get('/user', [ProfileController::class, 'me']);
+    Route::get('/me/templates', [ProfileController::class, 'myTemplates']);
 
     // Templates
     Route::get('/templates', [TemplateController::class, 'index']);
 
     // Events
+    Route::get('/events', [EventController::class, 'index']);
     Route::post('/events', [EventController::class, 'store']);
+    Route::get('/events/{id}', [EventController::class, 'show']);
+    Route::patch('/events/{id}', [EventController::class, 'update']);
     Route::get('/events/{slug}/stats', [EventController::class, 'stats']);
     
     // Guests & Logistics
@@ -44,6 +52,21 @@ Route::middleware('auth:sanctum')->group(function () {
     // Credits
     Route::post('/credits/purchase', [\App\Http\Controllers\CreditController::class, 'purchase']);
     Route::get('/credits/balance', [\App\Http\Controllers\CreditController::class, 'balance']);
+
+    // Social: Posts, Likes, Bookmarks, Comments
+    Route::get('/feed', [PostController::class, 'feed']);
+    Route::get('/posts/{id}', [PostController::class, 'show']);
+    Route::post('/posts', [PostController::class, 'store']); // agency only
+    Route::post('/posts/{id}/like', [PostController::class, 'like']);
+    Route::delete('/posts/{id}/like', [PostController::class, 'unlike']);
+    Route::post('/posts/{id}/bookmark', [PostController::class, 'bookmark']);
+    Route::delete('/posts/{id}/bookmark', [PostController::class, 'unbookmark']);
+    Route::get('/posts/{id}/comments', [PostController::class, 'comments']);
+    Route::post('/posts/{id}/comments', [PostController::class, 'addComment']);
+    Route::delete('/comments/{commentId}', [PostController::class, 'deleteComment']);
+    Route::get('/me/bookmarks', [PostController::class, 'myBookmarks']);
+    Route::get('/me/likes', [PostController::class, 'myLikes']);
+    Route::get('/agencies/{agencyId}/posts', [PostController::class, 'agencyPosts']);
 });
 
 // Public Guest Routes

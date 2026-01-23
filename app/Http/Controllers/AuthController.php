@@ -15,15 +15,18 @@ class AuthController extends Controller
             'full_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role' => 'nullable|in:client,agence', // Admin not registrable publicly usually
+            'role' => 'nullable|in:client,agence,agency', // accept 'agency' alias
             'agency_details' => 'nullable|array',
         ]);
+
+        $roleInput = $request->role;
+        $normalizedRole = $roleInput === 'agency' ? 'agence' : ($roleInput ?? 'client');
 
         $user = User::create([
             'full_name' => $request->full_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role ?? 'client',
+            'role' => $normalizedRole,
             'agency_details' => $request->agency_details,
         ]);
 

@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'templates' => [
+        'base_url' => env('TEMPLATES_URL', 'http://localhost:3000'),
+        'endpoint' => env('TEMPLATES_ENDPOINT', '/api/templates'),
+        'timeout' => env('TEMPLATES_TIMEOUT', 5),
+        'cache_ttl' => env('TEMPLATES_CACHE_TTL', 300), // seconds
+    ],
+
 ];

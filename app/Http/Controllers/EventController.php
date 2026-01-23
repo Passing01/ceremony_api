@@ -7,9 +7,33 @@ use App\Models\UserCredit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
+    public function index(Request $request)
+    {
+        $user = $request->user();
+        $events = Event::where('owner_id', $user->id)
+            ->latest()
+            ->paginate(15);
+
+        return response()->json($events);
+    }
+
+    public function show(Request $request, $id)
+    {
+        $event = Event::findOrFail($id);
+        if ($request->user()->id !== $event->owner_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Include guests list and their statuses in details
+        $event->load('guests');
+
+        return response()->json($event);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -17,7 +41,13 @@ class EventController extends Controller
             'title' => 'required|string|max:255',
             'event_date' => 'required|date',
             'location' => 'nullable|array',
+            'locations' => 'nullable|array',
+            'event_type' => 'nullable|string',
+            'dress_code' => 'nullable|string',
+            'groom_photo' => 'nullable|image|max:4096',
+            'bride_photo' => 'nullable|image|max:4096',
             'custom_data' => 'nullable|array',
+            'custom_fields' => 'nullable|array',
         ]);
 
         $user = $request->user();
@@ -35,13 +65,38 @@ class EventController extends Controller
         // }
 
         return DB::transaction(function () use ($request, $user, $credit) {
+            // Handle optional images
+            $groomPhotoPath = null;
+            $bridePhotoPath = null;
+            if ($request->hasFile('groom_photo')) {
+                $groomPhotoPath = $request->file('groom_photo')->store('events/photos', 'public');
+            }
+            if ($request->hasFile('bride_photo')) {
+                $bridePhotoPath = $request->file('bride_photo')->store('events/photos', 'public');
+            }
+
+            // Merge custom data with optional ceremony fields
+            $custom = array_merge(
+                $request->input('custom_data', []),
+                $request->input('custom_fields', []),
+                array_filter([
+                    'event_type' => $request->input('event_type'),
+                    'dress_code' => $request->input('dress_code'),
+                    'groom_photo' => $groomPhotoPath,
+                    'bride_photo' => $bridePhotoPath,
+                ], function ($v) { return !is_null($v) && $v !== ''; })
+            );
+
+            // Support multiple locations if provided; fallback to single location
+            $locations = $request->input('locations');
+            $locationPayload = $locations ?? $request->input('location');
             $event = Event::create([
                 'owner_id' => $user->id,
                 'template_id' => $request->template_id,
                 'title' => $request->title,
                 'event_date' => $request->event_date,
-                'location' => $request->location,
-                'custom_data' => $request->custom_data,
+                'location' => $locationPayload,
+                'custom_data' => $custom,
                 'slug' => Str::slug($request->title) . '-' . Str::random(6),
                 'short_link' => Str::random(10), // Placeholder for real short link logic
             ]);
@@ -51,6 +106,79 @@ class EventController extends Controller
             }
 
             return response()->json($event, 201);
+        });
+    }
+
+    public function update(Request $request, $id)
+    {
+        $event = Event::findOrFail($id);
+        if ($request->user()->id !== $event->owner_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'template_id' => 'sometimes|exists:templates,id',
+            'title' => 'sometimes|string|max:255',
+            'event_date' => 'sometimes|date',
+            'location' => 'nullable|array',
+            'locations' => 'nullable|array',
+            'event_type' => 'nullable|string',
+            'dress_code' => 'nullable|string',
+            'groom_photo' => 'nullable|image|max:4096',
+            'bride_photo' => 'nullable|image|max:4096',
+            'custom_data' => 'nullable|array',
+            'custom_fields' => 'nullable|array',
+        ]);
+
+        return DB::transaction(function () use ($request, $event, $validated) {
+            // Handle optional images only if provided
+            $groomPhotoPath = null;
+            $bridePhotoPath = null;
+            if ($request->hasFile('groom_photo')) {
+                $groomPhotoPath = $request->file('groom_photo')->store('events/photos', 'public');
+            }
+            if ($request->hasFile('bride_photo')) {
+                $bridePhotoPath = $request->file('bride_photo')->store('events/photos', 'public');
+            }
+
+            // Start with existing custom_data
+            $customExisting = $event->custom_data ?? [];
+            $customMerged = array_merge(
+                $customExisting,
+                $request->input('custom_data', []),
+                $request->input('custom_fields', []),
+                array_filter([
+                    'event_type' => $request->input('event_type'),
+                    'dress_code' => $request->input('dress_code'),
+                    // Replace photos only if new uploaded
+                    'groom_photo' => $groomPhotoPath,
+                    'bride_photo' => $bridePhotoPath,
+                ], function ($v) { return !is_null($v) && $v !== ''; })
+            );
+
+            // Compute location payload
+            $locations = $request->input('locations');
+            $locationPayload = $locations ?? $request->input('location');
+
+            // Apply scalar updates if present
+            if (array_key_exists('template_id', $validated)) {
+                $event->template_id = $validated['template_id'];
+            }
+            if (array_key_exists('title', $validated)) {
+                $event->title = $validated['title'];
+            }
+            if (array_key_exists('event_date', $validated)) {
+                $event->event_date = $validated['event_date'];
+            }
+            if (!is_null($locationPayload) || array_key_exists('location', $validated) || array_key_exists('locations', $validated)) {
+                $event->location = $locationPayload;
+            }
+
+            $event->custom_data = $customMerged;
+
+            $event->save();
+
+            return response()->json($event);
         });
     }
 

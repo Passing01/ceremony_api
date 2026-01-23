@@ -12,7 +12,18 @@ RUN apt-get update && apt-get install -y \
     curl \
     gnupg \
     ca-certificates \
+    acl \
     && docker-php-ext-install pdo pdo_pgsql pdo_sqlite
+
+# Créer les répertoires nécessaires et configurer les permissions
+RUN mkdir -p /var/log/supervisor \
+    && mkdir -p /var/run/php \
+    && mkdir -p /var/run/nginx \
+    && touch /var/run/nginx.pid \
+    && chown -R www-data:www-data /var/log/supervisor \
+    && chown -R www-data:www-data /var/run/php \
+    && chown -R www-data:www-data /var/run/nginx \
+    && chown -R www-data:www-data /var/run/nginx.pid
 
 # Installer Node.js 20.x
 RUN mkdir -p /etc/apt/keyrings \
@@ -52,6 +63,11 @@ RUN composer run-script post-autoload-dump --no-interaction \
 # Configurer Nginx
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Configurer les permissions de l'application
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
 # Nettoyer le cache
 RUN apt-get clean \

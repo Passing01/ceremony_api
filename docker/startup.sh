@@ -38,8 +38,11 @@ php /tmp/check-db.php
 rm /tmp/check-db.php
 
 # Exécuter les migrations et autres commandes de démarrage
-echo "Exécution des migrations..."
-php artisan migrate --force
+echo "Réinitialisation complète de la base de données..."
+php artisan migrate:fresh --force
+
+echo "Exécution des seeds..."
+php artisan db:seed --force
 
 echo "Mise en cache de la configuration..."
 php artisan config:cache

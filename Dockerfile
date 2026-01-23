@@ -72,5 +72,8 @@ RUN apt-get clean \
 # Exposer le port
 EXPOSE 10000
 
+# Exécuter les scripts de build
+RUN /bin/bash /var/www/html/build.sh
+
 # Démarrer les services avec les bonnes permissions
 CMD ["/bin/sh", "-c", "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]

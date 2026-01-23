@@ -64,11 +64,6 @@ RUN composer run-script post-autoload-dump --no-interaction \
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Configurer les permissions de l'application
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
-
 # Nettoyer le cache
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
@@ -77,5 +72,5 @@ RUN apt-get clean \
 # Exposer le port
 EXPOSE 10000
 
-# Démarrer les services
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Démarrer les services avec les bonnes permissions
+CMD ["/bin/sh", "-c", "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]

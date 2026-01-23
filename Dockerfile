@@ -60,8 +60,9 @@ RUN npm install --prefer-offline --no-audit --progress=false && \
 RUN composer run-script post-autoload-dump --no-interaction \
     && php artisan storage:link
 
-# Configurer Nginx
+# Configurer Nginx et PHP-FPM
 COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Nettoyer le cache

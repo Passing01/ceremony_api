@@ -24,6 +24,11 @@ class TemplateSeeder extends Seeder
                         'dress_code' => ['type' => 'string', 'label' => 'Dress code', 'optional' => true],
                         'locations' => ['type' => 'array', 'label' => 'Lieux', 'optional' => true],
                     ],
+                    'rendering' => [
+                        'title' => ['x' => 540, 'y' => 800, 'font' => 'Playfair Display', 'size' => 48, 'color' => '#856404'],
+                        'date' => ['x' => 540, 'y' => 950, 'font' => 'Playfair Display', 'size' => 24, 'color' => '#000000'],
+                        'location' => ['x' => 540, 'y' => 1050, 'font' => 'Playfair Display', 'size' => 20, 'color' => '#000000'],
+                    ]
                 ],
                 'is_active' => true,
             ]
@@ -43,6 +48,10 @@ class TemplateSeeder extends Seeder
                         'locations' => ['type' => 'array', 'optional' => true],
                         'theme' => ['type' => 'string', 'optional' => true],
                     ],
+                    'rendering' => [
+                        'title' => ['x' => 100, 'y' => 300, 'font' => 'Bungee', 'size' => 60, 'color' => '#FF0000'],
+                        'date' => ['x' => 100, 'y' => 450, 'font' => 'Roboto', 'size' => 24, 'color' => '#FFFFFF'],
+                    ]
                 ],
                 'is_active' => true,
             ]
@@ -61,6 +70,10 @@ class TemplateSeeder extends Seeder
                         'godparents' => ['type' => 'array', 'optional' => true],
                         'locations' => ['type' => 'array', 'optional' => true],
                     ],
+                    'rendering' => [
+                        'title' => ['x' => 540, 'y' => 400, 'font' => 'Great Vibes', 'size' => 50, 'color' => '#3498db'],
+                        'date' => ['x' => 540, 'y' => 600, 'font' => 'Roboto', 'size' => 24, 'color' => '#333333'],
+                    ]
                 ],
                 'is_active' => true,
             ]

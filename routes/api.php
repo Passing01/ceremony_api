@@ -6,6 +6,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\GuestController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TrackController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,11 +26,21 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Public Templates (for mobile & web without auth)
 Route::get('/public/templates', [TemplateController::class, 'index']);
+Route::get('/public/events/{slug}', [EventController::class, 'publicShow']);
+
+// Public Event Types (for mobile to get available event types and their fields)
+Route::get('/public/event-types', [\App\Http\Controllers\EventTypeController::class, 'index']);
+Route::get('/public/event-types/{type}', [\App\Http\Controllers\EventTypeController::class, 'show']);
+
+// Public Tracks (search + browse)
+Route::get('/public/tracks', [TrackController::class, 'publicIndex']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // Profile
     Route::get('/user', [ProfileController::class, 'me']);
+    Route::post('/user', [ProfileController::class, 'update']); // Update profile with image
     Route::get('/me/templates', [ProfileController::class, 'myTemplates']);
+    Route::get('/me/posts', [PostController::class, 'myPosts']); // New endpoint for user's posts
 
     // Templates
     Route::get('/templates', [TemplateController::class, 'index']);
@@ -40,11 +51,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/events/{id}', [EventController::class, 'show']);
     Route::patch('/events/{id}', [EventController::class, 'update']);
     Route::get('/events/{slug}/stats', [EventController::class, 'stats']);
-    
+
+    // Tracks
+    Route::post('/tracks/upload', [TrackController::class, 'upload']);
+
     // Guests & Logistics
     Route::post('/events/{id}/import', [EventController::class, 'importGuests']);
     Route::post('/events/{id}/send-invites', [EventController::class, 'sendInvites']);
-    
+
     // Media (Souvenir Module)
     Route::get('/events/{id}/gallery', [EventController::class, 'gallery']);
     Route::post('/events/{id}/upload', [EventController::class, 'uploadMedia']);

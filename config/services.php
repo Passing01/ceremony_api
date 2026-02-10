@@ -42,4 +42,9 @@ return [
         'cache_ttl' => env('TEMPLATES_CACHE_TTL', 300), // seconds
     ],
 
+    'whatsapp' => [
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+    ],
+
 ];

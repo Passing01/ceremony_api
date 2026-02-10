@@ -64,11 +64,6 @@ RUN composer run-script post-autoload-dump --no-interaction \
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY docker/startup.sh /usr/local/bin/startup.sh
-
-# Rendre les scripts exécutables
-RUN chmod +x /usr/local/bin/startup.sh \
-    && chmod +x /var/www/html/build.sh
 
 # Nettoyer le cache
 RUN apt-get clean \
@@ -78,5 +73,8 @@ RUN apt-get clean \
 # Exposer le port
 EXPOSE 10000
 
-# Démarrer les services
-CMD ["/usr/local/bin/startup.sh", "/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Exécuter les scripts de build
+RUN /bin/bash /var/www/html/build.sh
+
+# Démarrer les services avec les bonnes permissions
+CMD ["/bin/sh", "-c", "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]

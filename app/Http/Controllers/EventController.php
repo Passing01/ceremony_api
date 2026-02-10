@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\UserCredit;
+use App\Models\Track;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -28,35 +29,51 @@ class EventController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Include guests list and their statuses in details
-        $event->load('guests');
+        // Include guests list and their s, 'track'tatuses in details
+        $event->load(['guests', 'template']);
 
         return response()->json($event);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'template_id' => 'required|exists:templates,id',
+        $validTemplates = [1, 2, 3, 4, 5]; // IDs valides : 1=royal, 2=minimal, 3=floral, 4=vintage, 5=corporate
+
+        $validated = $request->validate([
+            'template_id' => [
+                'required',
+                function ($attribute, $value, $fail) use ($validTemplates) {
+                    if (!in_array((int) $value, $validTemplates, true)) {
+                        $fail('The selected template id is invalid. Valid IDs are: ' . implode(', ', $validTemplates));
+                    }
+                },
+            ],
             'title' => 'required|string|max:255',
             'event_date' => 'required|date',
             'location' => 'nullable|array',
             'locations' => 'nullable|array',
-            'event_type' => 'nullable|string',
-            'dress_code' => 'nullable|string',
-            'groom_photo' => 'nullable|image|max:4096',
-            'bride_photo' => 'nullable|image|max:4096',
+            'event_type' => 'required|string',
             'custom_data' => 'nullable|array',
             'custom_fields' => 'nullable|array',
+            'invitation_text' => 'nullable|string|max:1000',
+            'track_id' => 'nullable|uuid|exists:tracks,id',
         ]);
+
+        // Validate event type exists
+        $eventTypes = config('event_types');
+        if (!isset($eventTypes[$request->event_type])) {
+            return response()->json([
+                'message' => 'Type d\'événement invalide'
+            ], 422);
+        }
 
         $user = $request->user();
 
         // Check credits
         $credit = UserCredit::where('user_id', $user->id)
-                            ->where('template_id', $request->template_id)
-                            ->where('remaining_uses', '>', 0)
-                            ->first();
+            ->where('template_id', $request->template_id)
+            ->where('remaining_uses', '>', 0)
+            ->first();
 
         // For V1 validation, we might skip strict credit check if payment flow isn't ready, 
         // but per spec we should check.
@@ -64,37 +81,45 @@ class EventController extends Controller
         //     return response()->json(['message' => 'Crédits insuffisants pour ce modèle.'], 403);
         // }
 
-        return DB::transaction(function () use ($request, $user, $credit) {
-            // Handle optional images
-            $groomPhotoPath = null;
-            $bridePhotoPath = null;
-            if ($request->hasFile('groom_photo')) {
-                $groomPhotoPath = $request->file('groom_photo')->store('events/photos', 'public');
-            }
-            if ($request->hasFile('bride_photo')) {
-                $bridePhotoPath = $request->file('bride_photo')->store('events/photos', 'public');
+        return DB::transaction(function () use ($request, $user, $credit, $eventTypes) {
+            // Get event type configuration
+            $eventTypeConfig = $eventTypes[$request->event_type];
+
+            // Handle dynamic image fields based on event type
+            $imageFields = [];
+            foreach ($eventTypeConfig['fields'] as $field) {
+                if ($field['type'] === 'image' && $request->hasFile($field['name'])) {
+                    $imagePath = $request->file($field['name'])->store('events/photos', 'public');
+                    $imageFields[$field['name']] = $imagePath;
+                }
             }
 
-            // Merge custom data with optional ceremony fields
+            // Merge custom data with all fields
             $custom = array_merge(
                 $request->input('custom_data', []),
                 $request->input('custom_fields', []),
-                array_filter([
-                    'event_type' => $request->input('event_type'),
-                    'dress_code' => $request->input('dress_code'),
-                    'groom_photo' => $groomPhotoPath,
-                    'bride_photo' => $bridePhotoPath,
-                ], function ($v) { return !is_null($v) && $v !== ''; })
+                $imageFields
             );
+
+            // Add any non-image fields from the request
+            foreach ($eventTypeConfig['fields'] as $field) {
+                if ($field['type'] !== 'image' && $request->has($field['name'])) {
+                    $custom[$field['name']] = $request->input($field['name']);
+                }
+            }
 
             // Support multiple locations if provided; fallback to single location
             $locations = $request->input('locations');
             $locationPayload = $locations ?? $request->input('location');
+
             $event = Event::create([
                 'owner_id' => $user->id,
                 'template_id' => $request->template_id,
+                'track_id' => $request->input('track_id'),
+                'event_type' => $request->event_type,
                 'title' => $request->title,
                 'event_date' => $request->event_date,
+                'invitation_text' => $request->input('invitation_text'),
                 'location' => $locationPayload,
                 'custom_data' => $custom,
                 'slug' => Str::slug($request->title) . '-' . Str::random(6),
@@ -122,39 +147,58 @@ class EventController extends Controller
             'event_date' => 'sometimes|date',
             'location' => 'nullable|array',
             'locations' => 'nullable|array',
-            'event_type' => 'nullable|string',
-            'dress_code' => 'nullable|string',
-            'groom_photo' => 'nullable|image|max:4096',
-            'bride_photo' => 'nullable|image|max:4096',
+            'event_type' => 'sometimes|string',
             'custom_data' => 'nullable|array',
             'custom_fields' => 'nullable|array',
+            'invitation_text' => 'nullable|string|max:1000',
         ]);
 
+        // Validate event type if provided
+        if (isset($validated['event_type'])) {
+            $eventTypes = config('event_types');
+            if (!isset($eventTypes[$validated['event_type']])) {
+                return response()->json([
+                    'message' => 'Type d\'événement invalide'
+                ], 422);
+            }
+        }
+
         return DB::transaction(function () use ($request, $event, $validated) {
-            // Handle optional images only if provided
-            $groomPhotoPath = null;
-            $bridePhotoPath = null;
-            if ($request->hasFile('groom_photo')) {
-                $groomPhotoPath = $request->file('groom_photo')->store('events/photos', 'public');
-            }
-            if ($request->hasFile('bride_photo')) {
-                $bridePhotoPath = $request->file('bride_photo')->store('events/photos', 'public');
-            }
+            // Get event type configuration (use existing or new)
+            $eventType = $request->input('event_type', $event->event_type);
+            $eventTypes = config('event_types');
+            $eventTypeConfig = $eventTypes[$eventType] ?? null;
 
             // Start with existing custom_data
             $customExisting = $event->custom_data ?? [];
+
+            // Handle dynamic image fields based on event type
+            $imageFields = [];
+            if ($eventTypeConfig) {
+                foreach ($eventTypeConfig['fields'] as $field) {
+                    if ($field['type'] === 'image' && $request->hasFile($field['name'])) {
+                        $imagePath = $request->file($field['name'])->store('events/photos', 'public');
+                        $imageFields[$field['name']] = $imagePath;
+                    }
+                }
+            }
+
+            // Merge custom data
             $customMerged = array_merge(
                 $customExisting,
                 $request->input('custom_data', []),
                 $request->input('custom_fields', []),
-                array_filter([
-                    'event_type' => $request->input('event_type'),
-                    'dress_code' => $request->input('dress_code'),
-                    // Replace photos only if new uploaded
-                    'groom_photo' => $groomPhotoPath,
-                    'bride_photo' => $bridePhotoPath,
-                ], function ($v) { return !is_null($v) && $v !== ''; })
+                $imageFields
             );
+
+            // Add any non-image fields from the request
+            if ($eventTypeConfig) {
+                foreach ($eventTypeConfig['fields'] as $field) {
+                    if ($field['type'] !== 'image' && $request->has($field['name'])) {
+                        $customMerged[$field['name']] = $request->input($field['name']);
+                    }
+                }
+            }
 
             // Compute location payload
             $locations = $request->input('locations');
@@ -162,13 +206,19 @@ class EventController extends Controller
 
             // Apply scalar updates if present
             if (array_key_exists('template_id', $validated)) {
-                $event->template_id = $validated['template_id'];
+                $event->template_id = (int) $validated['template_id'];
+            }
+            if (array_key_exists('event_type', $validated)) {
+                $event->event_type = $validated['event_type'];
             }
             if (array_key_exists('title', $validated)) {
                 $event->title = $validated['title'];
             }
             if (array_key_exists('event_date', $validated)) {
                 $event->event_date = $validated['event_date'];
+            }
+            if (array_key_exists('invitation_text', $validated)) {
+                $event->invitation_text = $validated['invitation_text'];
             }
             if (!is_null($locationPayload) || array_key_exists('location', $validated) || array_key_exists('locations', $validated)) {
                 $event->location = $locationPayload;
@@ -217,13 +267,14 @@ class EventController extends Controller
             $file = $request->file('file');
             $path = $file->getRealPath();
             $data = array_map('str_getcsv', file($path));
-            
+
             // Assuming first column is valid phone number or header usage
             // Simple logic: Skip header if mapped, otherwise mapping needed.
             // For V1 -> Assume Column 0 is Phone.
-            
+
             foreach ($data as $index => $row) {
-                if ($index === 0 && !is_numeric($row[0])) continue; // Skip header
+                if ($index === 0 && !is_numeric($row[0]))
+                    continue; // Skip header
                 if (!empty($row[0])) {
                     $guestsToInsert[] = ['whatsapp_number' => $row[0]];
                 }
@@ -253,9 +304,9 @@ class EventController extends Controller
     public function sendInvites(Request $request, $id)
     {
         $event = Event::findOrFail($id);
-        
+
         if ($request->user()->id !== $event->owner_id) {
-             return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         // Dispatch Jobs for pending guests
@@ -297,5 +348,15 @@ class EventController extends Controller
         // $path = $request->file('file')->store('events/' . $event->id . '/gallery');
 
         return response()->json(['message' => 'Upload successful', 'path' => 'placeholder/path.jpg']);
+    }
+
+    public function publicShow($slug)
+    {
+        $event = Event::where('slug', $slug)->firstOrFail();
+
+        // Load template to include its config
+        $event->load(['template', 'track']);
+
+        return response()->json($event);
     }
 }

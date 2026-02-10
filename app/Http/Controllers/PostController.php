@@ -177,10 +177,30 @@ class PostController extends Controller
         return response()->json($posts);
     }
 
+    public function myPosts(Request $request)
+    {
+        $user = $request->user();
+        $posts = Post::with(['user:id,full_name,profile_picture,role', 'media'])
+            ->where('user_id', $user->id)
+            ->withCount(['likes', 'comments'])
+            ->orderByDesc('created_at')
+            ->paginate(15);
+
+        // Add auth user context attributes
+        $posts->getCollection()->transform(function ($post) use ($user) {
+            $post->setAttribute('liked', PostLike::where('post_id', $post->id)->where('user_id', $user->id)->exists());
+            $post->setAttribute('bookmarked', PostBookmark::where('post_id', $post->id)->where('user_id', $user->id)->exists());
+            return $post;
+        });
+
+        return response()->json($posts);
+    }
+
     public function agencyPosts(Request $request, $agencyId)
     {
         $posts = Post::with(['user:id,full_name,profile_picture,role', 'media'])
             ->where('user_id', $agencyId)
+            ->withCount(['likes', 'comments']) // Added counts for consistency
             ->orderByDesc('created_at')
             ->paginate(15);
         return response()->json($posts);

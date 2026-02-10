@@ -31,24 +31,26 @@ class SendWhatsAppInvite implements ShouldQueue
     public function handle(WhatsAppService $whatsappService): void
     {
         $event = $this->guest->event;
-        
+
         // Construct message components
-        // Logic to build components based on Event details...
-        // For now, simple text or header params
+        $invitationLink = url('/invitation/' . $this->guest->invitation_token); // Or short_link if implemented
+        $customMessage = $event->invitation_text ?? 'Vous êtes invité !';
+
         $components = [
             [
                 'type' => 'body',
                 'parameters' => [
                     ['type' => 'text', 'text' => $event->title],
-                    ['type' => 'text', 'text' => $this->guest->invitation_token], // Or generic link
+                    ['type' => 'text', 'text' => $invitationLink],
+                    ['type' => 'text', 'text' => $customMessage],
                 ]
             ]
         ];
 
         // Send
         $whatsappService->sendTemplateMessage(
-            $this->guest->whatsapp_number, 
-            'ceremony_invite_v1', 
+            $this->guest->whatsapp_number,
+            'ceremony_invite_v1',
             'fr',
             $components
         );

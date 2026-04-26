@@ -213,6 +213,16 @@ class TemplateBuilderController extends Controller
             }
         }
 
+        // Ajouter la section finale (RSVP / Célébration)
+        $dataArray[] = $prefixStorage([
+            'number'   => 'CÉLÉBRATION',
+            'title'    => $event->title ?? 'Notre Mariage',
+            'text'     => $event->invitation_text ?? 'Nous serions honorés de vous avoir parmi nous.',
+            'date'     => $event->event_date ? $event->event_date->format('d/m/Y H:i') : '',
+            'location' => is_array($event->location) ? ($event->location['name'] ?? '') : $event->location,
+            'isFinal'  => true
+        ]);
+
         // ============================================================
         // 2. Remplacement DIRECT dans le source HTML (Templates JS)
         // ============================================================

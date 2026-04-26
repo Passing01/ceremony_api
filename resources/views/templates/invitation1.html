@@ -3,523 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>Emma & Louis · Notre histoire</title>
+  <title>Notre Invitation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Cormorant Garamond', 'Times New Roman', serif;
-      background: #faf8f5;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-    }
-
-    /* ========== ENVELOPPE ========== */
-    .envelope-wrapper {
-      position: relative;
-      width: 100%;
-      max-width: 500px;
-      perspective: 1200px;
-    }
-
-    .envelope {
-      position: relative;
-      width: 100%;
-      height: 650px;
-      background: #f5f0e8;
-      border-radius: 8px;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.12), 0 0 0 1px rgba(180,150,100,0.2);
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.5s ease;
-      transform-style: preserve-3d;
-    }
-
-    .envelope.opened {
-      transform: rotateY(0deg);
-      pointer-events: none;
-    }
-
-    .envelope-flap {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 60%;
-      background: linear-gradient(180deg, #ede4d3 0%, #f2ecdd 100%);
-      clip-path: polygon(0 0, 100% 0, 50% 100%);
-      transform-origin: top center;
-      transition: transform 1.2s cubic-bezier(0.68, -0.15, 0.27, 1.15);
-      z-index: 10;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-      border-bottom: 1px solid rgba(180,150,100,0.3);
-    }
-
-    .envelope.opened .envelope-flap {
-      transform: rotateX(180deg);
-      box-shadow: 0 15px 30px rgba(0,0,0,0.15);
-    }
-
-    .envelope-seal {
-      position: absolute;
-      top: 38%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 70px;
-      height: 70px;
-      background: radial-gradient(circle, #d4af37 0%, #b5942c 100%);
-      border-radius: 50%;
-      z-index: 11;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      color: white;
-      box-shadow: 0 8px 20px rgba(180,150,30,0.5);
-      transition: all 0.6s ease;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .envelope.opened .envelope-seal {
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(0.3);
-    }
-
-    .envelope-front-text {
-      position: absolute;
-      bottom: 25%;
-      left: 50%;
-      transform: translateX(-50%);
-      text-align: center;
-      color: #8b7a5e;
-      z-index: 5;
-      font-size: 1.2rem;
-      letter-spacing: 2px;
-      transition: opacity 0.5s ease;
-    }
-
-    .envelope.opened .envelope-front-text {
-      opacity: 0;
-    }
-
-    .open-hint {
-      position: absolute;
-      bottom: 15%;
-      left: 50%;
-      transform: translateX(-50%);
-      color: #b59d5e;
-      font-size: 0.9rem;
-      z-index: 6;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 1; }
-    }
-
-    /* ========== CONTENU INTERIEUR ========== */
-    .inner-content {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      transition: opacity 0.8s ease 0.4s;
-      pointer-events: none;
-      background: white;
-      z-index: 2;
-    }
-
-    .envelope.opened .inner-content {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .invitation-card {
-      width: 100%;
-      height: 100%;
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .top-accent {
-      height: 4px;
-      background: linear-gradient(90deg, #d4af37, #e6d290, #d4af37);
-      flex-shrink: 0;
-    }
-
-    /* ========== BARRE DE PROGRESSION STYLE WHATSAPP ========== */
-    .progress-container {
-      display: flex;
-      gap: 5px;
-      padding: 12px 20px;
-      background: rgba(255,255,255,0.95);
-      border-bottom: 1px solid #f0ebe0;
-      flex-shrink: 0;
-    }
-
-    .progress-segment {
-      flex: 1;
-      height: 4px;
-      background: #e5e0d5;
-      border-radius: 2px;
-      transition: background 0.4s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .progress-segment.active {
-      background: #d4af37;
-    }
-
-    .progress-segment.current {
-      background: #e5e0d5;
-    }
-
-    .progress-segment.current .progress-fill {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      background: #d4af37;
-      border-radius: 2px;
-      width: 0%;
-      transition: width 0.1s linear;
-    }
-
-    .progress-segment.done {
-      background: #d4af37;
-    }
-
-    /* ========== STORY CONTAINER ========== */
-    .story-container {
-      flex: 1;
-      overflow-y: auto;
-      padding: 25px 25px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      min-height: 0;
-    }
-
-    .chapter {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      animation: fadeGrace 0.7s ease forwards;
-      opacity: 0;
-      transform: translateY(10px);
-    }
-
-    .chapter.active {
-      display: flex;
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    @keyframes fadeGrace {
-      0% { opacity: 0; transform: translateY(15px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    .chapter-number {
-      font-size: 0.8rem;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: #d4af37;
-      margin-bottom: 15px;
-      border-bottom: 1px solid rgba(212,175,55,0.3);
-      padding-bottom: 6px;
-    }
-
-    .chapter h2 {
-      font-size: 2.2rem;
-      color: #3a3a3a;
-      margin-bottom: 15px;
-      font-weight: 400;
-      letter-spacing: 1px;
-    }
-
-    .chapter .text {
-      font-size: 1.1rem;
-      color: #5a5a5a;
-      line-height: 1.6;
-      margin: 8px 0 15px;
-      max-width: 340px;
-    }
-
-    .chapter .date {
-      font-size: 0.95rem;
-      color: #b59d5e;
-      font-style: italic;
-    }
-
-    /* ========== MEDIA (images/vidéos) ========== */
-    .media-container {
-      margin: 15px 0;
-      width: 100%;
-      max-width: 320px;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-    }
-
-    .media-container img,
-    .media-container video {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 12px;
-      max-height: 220px;
-      object-fit: cover;
-    }
-
-    /* ========== NAVIGATION ========== */
-    .nav-buttons {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 25px;
-      margin-top: 10px;
-      flex-shrink: 0;
-      padding-bottom: 15px;
-    }
-
-    .nav-btn {
-      background: none;
-      border: 1px solid rgba(212,175,55,0.4);
-      color: #5a5a5a;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: white;
-    }
-
-    .nav-btn:hover {
-      background: rgba(212,175,55,0.1);
-      border-color: #d4af37;
-    }
-
-    .indicators {
-      display: flex;
-      gap: 8px;
-      flex-shrink: 0;
-      padding-bottom: 5px;
-    }
-
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #ddd8cd;
-      transition: all 0.3s ease;
-    }
-
-    .dot.active {
-      background: #d4af37;
-      transform: scale(1.5);
-    }
-
-    /* ========== FORMULAIRE RSVP ========== */
-    .rsvp-form {
-      width: 100%;
-      max-width: 350px;
-      margin: 10px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .rsvp-form input,
-    .rsvp-form select {
-      padding: 12px 15px;
-      border: 1px solid #e0d8c8;
-      border-radius: 6px;
-      font-family: inherit;
-      font-size: 1rem;
-      background: #fdfcf8;
-      color: #3a3a3a;
-    }
-
-    .rsvp-form button {
-      background: #d4af37;
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: 6px;
-      font-size: 1rem;
-      letter-spacing: 1px;
-      cursor: pointer;
-      transition: background 0.3s;
-      font-family: inherit;
-    }
-
-    .rsvp-form button:hover {
-      background: #c09c2e;
-    }
-
-    .confirmation-message {
-      display: none;
-      color: #2d6a4f;
-      font-size: 1.1rem;
-      margin-top: 10px;
-      animation: fadeGrace 0.5s ease;
-    }
-
-    @media (max-width: 400px) {
-      .chapter h2 {
-        font-size: 1.8rem;
-      }
-      .envelope {
-        height: 580px;
-      }
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Cormorant Garamond', serif; background: #faf8f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .envelope-wrapper { position: relative; width: 100%; max-width: 500px; perspective: 1200px; }
+    .envelope { position: relative; width: 100%; height: 650px; background: #f5f0e8; border-radius: 8px; box-shadow: 0 30px 60px rgba(0,0,0,0.12); overflow: hidden; cursor: pointer; transition: transform 0.5s ease; transform-style: preserve-3d; }
+    .envelope.opened { transform: rotateY(0deg); pointer-events: none; }
+    .envelope-flap { position: absolute; top: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(180deg, #ede4d3 0%, #f2ecdd 100%); clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: top center; transition: transform 1.2s cubic-bezier(0.68, -0.15, 0.27, 1.15); z-index: 10; }
+    .envelope.opened .envelope-flap { transform: rotateX(180deg); }
+    .envelope-seal { position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 70px; background: radial-gradient(circle, #d4af37 0%, #b5942c 100%); border-radius: 50%; z-index: 11; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; box-shadow: 0 8px 20px rgba(180,150,30,0.5); transition: all 0.6s ease; }
+    .envelope.opened .envelope-seal { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    .envelope-front-text { position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%); text-align: center; color: #8b7a5e; z-index: 5; font-size: 1.2rem; letter-spacing: 2px; }
+    .inner-content { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease 0.4s; pointer-events: none; background: white; z-index: 2; display: flex; flex-direction: column; }
+    .envelope.opened .inner-content { opacity: 1; pointer-events: auto; }
+    .progress-container { display: flex; gap: 5px; padding: 12px 20px; background: rgba(255,255,255,0.95); border-bottom: 1px solid #f0ebe0; flex-shrink: 0; }
+    .progress-segment { flex: 1; height: 4px; background: #e5e0d5; border-radius: 2px; position: relative; overflow: hidden; }
+    .progress-segment.done { background: #d4af37; }
+    .progress-fill { position: absolute; top: 0; left: 0; height: 100%; background: #d4af37; width: 0%; }
+    .story-container { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .chapter { display: none; flex-direction: column; align-items: center; width: 100%; animation: fade 0.7s ease; }
+    .chapter.active { display: flex; }
+    @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .chapter-number { font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; color: #d4af37; margin-bottom: 15px; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 6px; }
+    .chapter h2 { font-size: 2.2rem; margin-bottom: 15px; color: #3a3a3a; font-weight: 400; }
+    .chapter .text { font-size: 1.15rem; line-height: 1.6; color: #555; margin-bottom: 20px; }
+    .chapter .date { font-size: 0.95rem; color: #b59d5e; margin-bottom: 20px; font-family: 'Montserrat', sans-serif; letter-spacing: 1px; }
+    .media-container { width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); background: #fdfcf8; }
+    .media-container img, .media-container video { width: 100%; display: block; object-fit: cover; max-height: 250px; }
+    .indicators { display: flex; gap: 8px; padding: 15px; justify-content: center; }
+    .dot { width: 6px; height: 6px; background: #e5e0d5; border-radius: 50%; transition: all 0.3s; }
+    .dot.active { background: #d4af37; transform: scale(1.5); }
+    .nav-buttons { display: flex; justify-content: center; gap: 20px; padding-bottom: 20px; }
+    .nav-btn { background: none; border: 1px solid #e0d8c8; color: #8b7a5e; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: all 0.3s; }
+    .rsvp-form { width: 100%; max-width: 350px; display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+    .rsvp-form select, .rsvp-form input, .rsvp-form textarea { padding: 10px; border: 1px solid #e0d8c8; border-radius: 6px; font-family: inherit; font-size: 1rem; }
+    .rsvp-form button { background: #d4af37; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+    .confirmation-message { display: none; color: #2d6a4f; margin-top: 15px; }
   </style>
 </head>
 <body>
 <div class="envelope-wrapper">
-  <!-- ENVELOPPE -->
   <div class="envelope" id="envelope">
     <div class="envelope-flap"></div>
     <div class="envelope-seal">💌</div>
-    <div class="envelope-front-text">Emma & Louis</div>
-    <div class="open-hint">✉️ Touchez pour ouvrir</div>
-
-    <!-- CONTENU INTERIEUR -->
+    <div class="envelope-front-text">Invitation</div>
     <div class="inner-content" id="innerContent">
-      <div class="invitation-card">
-        <div class="top-accent"></div>
-
-        <!-- BARRE DE PROGRESSION -->
-        <div class="progress-container" id="progressContainer"></div>
-
-        <!-- CHAPTERS -->
-        <div class="story-container" id="storyContainer">
-          <!-- Chapitre 1 -->
-          <div class="chapter active" data-index="0">
-            <div class="chapter-number">Chapitre I</div>
-            <h2>Le premier regard</h2>
-            <p class="text">C'était un soir d'automne, sous les lumières de la ville. Nos regards se sont croisés et le monde s'est arrêté.</p>
-            <div class="date">Paris, 12 octobre 2020</div>
-            <div class="media-container">
-              <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&h=400&fit=crop" alt="Paris la nuit" onerror="this.style.display='none'">
-            </div>
-          </div>
-
-          <!-- Chapitre 2 -->
-          <div class="chapter" data-index="1">
-            <div class="chapter-number">Chapitre II</div>
-            <h2>La promenade</h2>
-            <p class="text">Nos mains se sont effleurées sur le Pont des Arts. Nous avons parlé jusqu'à l'aube.</p>
-            <div class="date">Un matin de printemps 2021</div>
-            <div class="media-container">
-              <video src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" controls muted loop playsinline style="max-height:200px;" onerror="this.style.display='none'"></video>
-            </div>
-          </div>
-
-          <!-- Chapitre 3 -->
-          <div class="chapter" data-index="2">
-            <div class="chapter-number">Chapitre III</div>
-            <h2>Le voyage</h2>
-            <p class="text">Perdus dans les collines toscanes, nous avons compris que chaque route menait l'un vers l'autre.</p>
-            <div class="date">Été 2022</div>
-            <div class="media-container">
-              <img src="https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?w=600&h=400&fit=crop" alt="Toscane" onerror="this.style.display='none'">
-            </div>
-          </div>
-
-          <!-- Chapitre 4 -->
-          <div class="chapter" data-index="3">
-            <div class="chapter-number">Chapitre IV</div>
-            <h2>L'emménagement</h2>
-            <p class="text">Notre petit cocon à deux, rempli de rires, de plantes et de projets.</p>
-            <div class="date">Automne 2023</div>
-            <div class="media-container">
-              <img src="https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&h=400&fit=crop" alt="Nouvelle maison" onerror="this.style.display='none'">
-            </div>
-          </div>
-
-          <!-- Chapitre 5 -->
-          <div class="chapter" data-index="4">
-            <div class="chapter-number">Chapitre V</div>
-            <h2>Le voyage de rêve</h2>
-            <p class="text">Des aurores boréales aux nuits étoilées, notre plus belle aventure.</p>
-            <div class="date">Hiver 2024</div>
-            <div class="media-container">
-              <video src="https://assets.mixkit.co/videos/preview/mixkit-aurora-borealis-over-snowy-mountains-4130-large.mp4" controls muted loop playsinline style="max-height:200px;" onerror="this.style.display='none'"></video>
-            </div>
-          </div>
-
-          <!-- Chapitre 6 -->
-          <div class="chapter" data-index="5">
-            <div class="chapter-number">Chapitre VI</div>
-            <h2>La demande</h2>
-            <p class="text">Sous un ciel étoilé, un genou à terre, la plus belle question a reçu la plus belle réponse.</p>
-            <div class="date">23 septembre 2025</div>
-            <div style="font-size:1.3rem; color:#d4af37; margin-top:10px;">Elle a dit <strong>oui</strong> 💍</div>
-            <div class="media-container">
-              <img src="https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600&h=400&fit=crop" alt="Bague de fiançailles" onerror="this.style.display='none'">
-            </div>
-          </div>
-
-          <!-- Chapitre 7 : Invitation -->
-          <div class="chapter" data-index="6">
-            <div class="chapter-number">Célébration</div>
-            <h2>Nous nous marions</h2>
-            <p class="text">Et nous serions honorés de vous avoir à nos côtés.</p>
-            <div style="font-size:1.6rem; color:#b59d5e; margin:8px 0;">14 juin 2026</div>
-            <div>Château de Vaux-le-Vicomte</div>
-          </div>
-
-          <!-- Chapitre 8 : Formulaire RSVP -->
-          <div class="chapter" data-index="7">
-            <div class="chapter-number">Confirmation</div>
-            <h2>Votre présence</h2>
+      <div class="progress-container" id="progressContainer"></div>
+      <div class="story-container" id="storyContainer"></div>
+      <div class="story-container" id="detailsSection" style="display:none;">
+          <div class="chapter active">
+            <div class="chapter-number">CÉLÉBRATION</div>
+            <h2 id="finalTitle">Chargement...</h2>
+            <p id="finalText" class="text"></p>
+            <div id="finalDate" class="date"></div>
+            <div id="finalLocation" style="color:#d4af37; font-weight:bold;"></div>
             <form class="rsvp-form" id="rsvpForm">
-              <input type="text" placeholder="Votre nom" required>
-              <input type="email" placeholder="Votre email" required>
-              <select required>
+              <select id="rsvpPresence" required>
                 <option value="">Serez-vous présent(e) ?</option>
-                <option value="oui">Avec joie !</option>
-                <option value="non">Malheureusement...</option>
+                <option value="confirmed">Avec joie !</option>
+                <option value="declined">Malheureusement...</option>
               </select>
-              <input type="number" placeholder="Nombre d'accompagnants" min="0" max="5">
-              <textarea placeholder="Un petit mot pour les mariés..." rows="2" style="padding:10px; border:1px solid #e0d8c8; border-radius:6px; font-family:inherit;"></textarea>
+              <input type="number" id="rsvpAccompagnants" placeholder="Accompagnants" min="0">
+              <textarea id="rsvpMessage" placeholder="Un petit mot..." rows="2"></textarea>
               <button type="submit">Confirmer ✨</button>
             </form>
-            <div class="confirmation-message" id="confirmationMessage">
-              ✅ Merci ! Votre réponse a bien été enregistrée.<br>À très vite !
-            </div>
+            <div class="confirmation-message" id="rsvpMerci">✅ Merci ! Votre réponse a été enregistrée.</div>
           </div>
-        </div>
-
-        <!-- INDICATORS & NAV -->
-        <div class="indicators" id="indicators"></div>
-        <div class="nav-buttons">
-          <button class="nav-btn" id="prevBtn">←</button>
-          <button class="nav-btn" id="pausePlayBtn" style="font-size:1rem;">⏸️</button>
-          <button class="nav-btn" id="nextBtn">→</button>
-        </div>
+      </div>
+      <div class="indicators" id="indicators"></div>
+      <div class="nav-buttons">
+        <button class="nav-btn" id="prevBtn">←</button>
+        <button class="nav-btn" id="pausePlayBtn">⏸️</button>
+        <button class="nav-btn" id="nextBtn">→</button>
       </div>
     </div>
   </div>
@@ -527,218 +84,79 @@
 
 <script>
   (function() {
-    // ========== ENVELOPPE ==========
-    const envelope = document.getElementById('envelope');
-    const innerContent = document.getElementById('innerContent');
+    // Les chapitres seront injectés ici par le serveur
+    const chaptersData = [
+      { number: "Chapitre I", title: "Le premier regard", text: "C'était un soir d'automne...", date: "Paris, 2020", media: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600" },
+      { number: "CÉLÉBRATION", title: "Notre Mariage", text: "Nous vous attendons !", date: "14 Juin 2026", location: "Château de Vaux", isFinal: true }
+    ];
 
-    envelope.addEventListener('click', function(e) {
-      if (!envelope.classList.contains('opened')) {
-        envelope.classList.add('opened');
-        // Démarre le défilement automatique après ouverture
-        setTimeout(() => {
-          startAutoPlay();
-        }, 1000);
-      }
-    });
-
-    // ========== CHAPTERS & PROGRESS ==========
-    const chapters = document.querySelectorAll('.chapter');
-    const totalChapters = chapters.length;
+    const storyContainer = document.getElementById('storyContainer');
+    const detailsSection = document.getElementById('detailsSection');
     const progressContainer = document.getElementById('progressContainer');
     const indicatorsContainer = document.getElementById('indicators');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const pausePlayBtn = document.getElementById('pausePlayBtn');
 
-    let currentIndex = 0;
-    let autoplayInterval = null;
-    let isPlaying = false;
-    let progressAnimationId = null;
-    let segmentFillStartTime = 0;
-    const CHAPTER_DURATION = 5000; // 5 secondes par chapitre
+    const storyChapters = chaptersData.filter(c => !c.isFinal);
+    const finalSection = chaptersData.find(c => c.isFinal) || storyChapters[storyChapters.length-1];
 
-    // Construire segments et dots
-    for (let i = 0; i < totalChapters; i++) {
-      const seg = document.createElement('div');
-      seg.className = 'progress-segment';
-      seg.dataset.index = i;
-      if (i === 0) seg.classList.add('current');
-      progressContainer.appendChild(seg);
+    storyChapters.forEach((data, i) => {
+      const div = document.createElement('div');
+      div.className = 'chapter' + (i === 0 ? ' active' : '');
+      let mediaHtml = data.media ? (/\.(mp4|webm|mov|ogg)/i.test(data.media) ? 
+        `<div class="media-container"><video src="${data.media}" autoplay muted loop playsinline></video></div>` : 
+        `<div class="media-container"><img src="${data.media}"></div>`) : '';
+      div.innerHTML = `<div class="chapter-number">${data.number || 'Chapitre '+(i+1)}</div><h2>${data.title}</h2><p class="text">${data.text}</p><div class="date">${data.date||''}</div>${mediaHtml}`;
+      storyContainer.appendChild(div);
 
-      const dot = document.createElement('span');
-      dot.className = 'dot';
-      if (i === 0) dot.classList.add('active');
-      indicatorsContainer.appendChild(dot);
+      const seg = document.createElement('div'); seg.className = 'progress-segment' + (i===0?' current':''); progressContainer.appendChild(seg);
+      const dot = document.createElement('span'); dot.className = 'dot' + (i===0?' active':''); indicatorsContainer.appendChild(dot);
+    });
+
+    if(finalSection){
+      document.getElementById('finalTitle').textContent = finalSection.title;
+      document.getElementById('finalText').textContent = finalSection.text;
+      document.getElementById('finalDate').textContent = finalSection.date;
+      document.getElementById('finalLocation').textContent = finalSection.location || '';
     }
 
-    const segments = document.querySelectorAll('.progress-segment');
-    const dots = document.querySelectorAll('.dot');
+    const envelope = document.getElementById('envelope');
+    const chapters = storyContainer.querySelectorAll('.chapter');
+    const segments = progressContainer.querySelectorAll('.progress-segment');
+    const dots = indicatorsContainer.querySelectorAll('.dot');
+    let currentIndex = 0, isPlaying = false, progressAnimationId = null;
+    const CHAPTER_DURATION = 5000;
+
+    envelope.addEventListener('click', () => { if(!envelope.classList.contains('opened')){ envelope.classList.add('opened'); setTimeout(()=>showChapter(0), 1000); isPlaying=true; } });
 
     function showChapter(index) {
-      if (index < 0 || index >= totalChapters) return;
-      
-      // Enlever l'animation de remplissage en cours
-      if (progressAnimationId) {
-        cancelAnimationFrame(progressAnimationId);
-        progressAnimationId = null;
+      if(index < 0) return;
+      if(progressAnimationId) cancelAnimationFrame(progressAnimationId);
+      if(index >= storyChapters.length){
+        storyContainer.style.display='none'; detailsSection.style.display='flex';
+        progressContainer.style.visibility='hidden'; indicatorsContainer.style.visibility='hidden';
+        isPlaying=false; return;
       }
-
-      // Reset tous les segments
-      segments.forEach(seg => {
-        seg.classList.remove('current', 'done');
-        const fill = seg.querySelector('.progress-fill');
-        if (fill) fill.remove();
-      });
-
-      // Marquer les précédents comme faits
-      for (let i = 0; i < index; i++) {
-        segments[i].classList.add('done');
-      }
-      // Segment courant
-      segments[index].classList.add('current');
-      // Ajouter barre de remplissage
-      let fill = segments[index].querySelector('.progress-fill');
-      if (!fill) {
-        fill = document.createElement('div');
-        fill.className = 'progress-fill';
-        segments[index].appendChild(fill);
-      }
-      fill.style.width = '0%';
-
-      // Afficher le bon chapitre
-      chapters.forEach((ch, i) => {
-        ch.classList.remove('active');
-        dots[i].classList.remove('active');
-      });
-      chapters[index].classList.add('active');
-      dots[index].classList.add('active');
-      currentIndex = index;
-
-      // Relancer le remplissage si autoplay actif
-      if (isPlaying) {
-        startSegmentFill(index);
-      }
+      storyContainer.style.display='flex'; detailsSection.style.display='none';
+      progressContainer.style.visibility='visible'; indicatorsContainer.style.visibility='visible';
+      chapters.forEach(c=>c.classList.remove('active')); chapters[index].classList.add('active');
+      segments.forEach((s,i)=>{ s.classList.remove('current','done'); if(i<index) s.classList.add('done'); if(i===index) s.classList.add('current'); const f=s.querySelector('.progress-fill'); if(f) f.remove(); });
+      dots.forEach((d,i)=>{ d.classList.remove('active'); if(i===index) d.classList.add('active'); });
+      currentIndex = index; if(isPlaying) startSegmentFill(index);
     }
 
     function startSegmentFill(index) {
-      if (progressAnimationId) cancelAnimationFrame(progressAnimationId);
-      const seg = segments[index];
-      const fill = seg.querySelector('.progress-fill');
-      if (!fill) return;
-      segmentFillStartTime = performance.now();
-      
-      function updateFill(now) {
-        const elapsed = now - segmentFillStartTime;
-        const percent = Math.min((elapsed / CHAPTER_DURATION) * 100, 100);
-        fill.style.width = percent + '%';
-        
-        if (percent < 100 && isPlaying) {
-          progressAnimationId = requestAnimationFrame(updateFill);
-        } else if (percent >= 100 && isPlaying) {
-          // Passer au chapitre suivant
-          if (currentIndex < totalChapters - 1) {
-            showChapter(currentIndex + 1);
-          } else {
-            // Arrêter à la fin
-            pauseAutoplay();
-          }
-        }
+      const seg = segments[index]; if(!seg) return;
+      const fill = document.createElement('div'); fill.className = 'progress-fill'; seg.appendChild(fill);
+      const start = performance.now();
+      function animate(now){
+        const p = Math.min(((now-start)/CHAPTER_DURATION)*100, 100); fill.style.width = p+'%';
+        if(p<100) progressAnimationId = requestAnimationFrame(animate); else showChapter(currentIndex+1);
       }
-      progressAnimationId = requestAnimationFrame(updateFill);
+      progressAnimationId = requestAnimationFrame(animate);
     }
 
-    function startAutoPlay() {
-      if (isPlaying) return;
-      isPlaying = true;
-      pausePlayBtn.textContent = '⏸️';
-      startSegmentFill(currentIndex);
-    }
-
-    function pauseAutoplay() {
-      isPlaying = false;
-      if (progressAnimationId) {
-        cancelAnimationFrame(progressAnimationId);
-        progressAnimationId = null;
-      }
-      pausePlayBtn.textContent = '▶️';
-    }
-
-    function togglePlayPause() {
-      if (isPlaying) {
-        pauseAutoplay();
-      } else {
-        startAutoPlay();
-        // Le remplissage reprend là où il était
-        const seg = segments[currentIndex];
-        const fill = seg.querySelector('.progress-fill');
-        if (fill) {
-          const currentWidth = parseFloat(fill.style.width) || 0;
-          segmentFillStartTime = performance.now() - (currentWidth / 100) * CHAPTER_DURATION;
-          startSegmentFill(currentIndex);
-        }
-      }
-    }
-
-    // ========== BOUTONS ==========
-    prevBtn.addEventListener('click', () => {
-      if (currentIndex > 0) {
-        showChapter(currentIndex - 1);
-      }
-    });
-
-    nextBtn.addEventListener('click', () => {
-      if (currentIndex < totalChapters - 1) {
-        showChapter(currentIndex + 1);
-      }
-    });
-
-    pausePlayBtn.addEventListener('click', togglePlayPause);
-
-    // ========== SWIPE TACTILE ==========
-    let touchStartX = 0;
-    const storyContainer = document.getElementById('storyContainer');
-    storyContainer.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, {passive: true});
-
-    storyContainer.addEventListener('touchend', (e) => {
-      if (!touchStartX) return;
-      let diff = touchStartX - e.changedTouches[0].screenX;
-      if (Math.abs(diff) > 40) {
-        if (diff > 0 && currentIndex < totalChapters - 1) {
-          showChapter(currentIndex + 1);
-        } else if (diff < 0 && currentIndex > 0) {
-          showChapter(currentIndex - 1);
-        }
-      }
-      touchStartX = 0;
-    });
-
-    // ========== CLAVIER ==========
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight' && currentIndex < totalChapters - 1) {
-        showChapter(currentIndex + 1);
-      } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
-        showChapter(currentIndex - 1);
-      } else if (e.key === ' ') {
-        e.preventDefault();
-        togglePlayPause();
-      }
-    });
-
-    // ========== FORMULAIRE ==========
-    const form = document.getElementById('rsvpForm');
-    const confirmationMsg = document.getElementById('confirmationMessage');
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      confirmationMsg.style.display = 'block';
-      form.style.display = 'none';
-      // Ici vous pourriez envoyer les données à un serveur
-      console.log('Formulaire soumis');
-    });
-
-    // Initialisation
-    showChapter(0);
+    document.getElementById('prevBtn').addEventListener('click', () => showChapter(currentIndex-1));
+    document.getElementById('nextBtn').addEventListener('click', () => showChapter(currentIndex+1));
+    document.getElementById('pausePlayBtn').addEventListener('click', () => { isPlaying = !isPlaying; if(!isPlaying && progressAnimationId) cancelAnimationFrame(progressAnimationId); else showChapter(currentIndex); });
   })();
 </script>
 </body>

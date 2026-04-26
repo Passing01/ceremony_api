@@ -27,17 +27,35 @@ class TemplateBuilderController extends Controller
             $filename = $file->getFilename();
             if (!str_ends_with($filename, '.html')) continue;
 
-            $exists = \App\Models\Template::where('config_schema->file', $filename)->exists();
-            if (!$exists) {
-                $name = ucwords(str_replace(['_', '.html'], [' ', ''], $filename));
-                \App\Models\Template::create([
-                    'name' => $name,
-                    'category' => 'Général',
-                    'price_per_pack' => 10.00,
-                    'is_active' => true,
-                    'config_schema' => ['type' => 'html', 'file' => $filename]
-                ]);
+            $baseName = str_replace('.html', '', $filename);
+            $jsonPath = $path . '/' . $baseName . '.json';
+            
+            $metadata = [
+                'name' => ucwords(str_replace('_', ' ', $baseName)),
+                'category' => 'Général',
+                'price_per_pack' => 10.00,
+                'sections' => []
+            ];
+
+            if (File::exists($jsonPath)) {
+                $jsonContent = json_decode(File::get($jsonPath), true);
+                $metadata = array_merge($metadata, $jsonContent);
             }
+
+            \App\Models\Template::updateOrCreate(
+                ['config_schema->file' => $filename],
+                [
+                    'name' => $metadata['name'],
+                    'category' => $metadata['category'],
+                    'price_per_pack' => $metadata['price_per_pack'],
+                    'is_active' => true,
+                    'config_schema' => [
+                        'type' => 'html',
+                        'file' => $filename,
+                        'sections' => $metadata['sections']
+                    ]
+                ]
+            );
         }
     }
 

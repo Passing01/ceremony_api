@@ -4,43 +4,70 @@
     "price_per_pack": 20.00,
     "sections": [
         {
-            "id": "intro",
-            "label": "Introduction",
+            "id": "envelope",
+            "label": "L'Enveloppe 3D",
             "fields": [
-                {"id": "title", "label": "Titre", "type": "text", "default": "Wedding Day"},
-                {"id": "groom", "label": "Marié", "type": "text", "default": "Jean"},
-                {"id": "bride", "label": "Mariée", "type": "text", "default": "Marie"}
+                {"id": "seal", "label": "Sceau (Emoji)", "type": "text", "default": "💝"},
+                {"id": "names", "label": "Noms sur l'enveloppe", "type": "text", "default": "Emma & Louis"},
+                {"id": "subtitle", "label": "Sous-titre enveloppe", "type": "text", "default": "Il était une fois nous"}
             ]
         },
         {
             "id": "ch1",
-            "label": "Chapitre 1 - La Rencontre",
+            "label": "Chapitre 1 - Rencontre",
             "fields": [
                 {"id": "badge", "label": "Badge", "type": "text", "default": "NOTRE RENCONTRE"},
                 {"id": "title", "label": "Titre", "type": "text", "default": "Le premier regard"},
-                {"id": "story", "label": "Histoire", "type": "textarea", "default": "Tout a commencé un soir de pluie..."},
-                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Paris, 2020"},
-                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622"}
+                {"id": "story", "label": "Texte", "type": "textarea", "default": "C'était un soir d'automne, sous les lumières de la ville. Nos regards se sont croisés et le monde s'est arrêté."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Paris, 12 octobre 2020"},
+                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&h=400&fit=crop"},
+                {"id": "mediaCaption", "label": "Légende média", "type": "text", "default": "Pont Alexandre III, ce soir-là"}
             ]
         },
         {
             "id": "ch2",
-            "label": "Chapitre 2 - Le Chemin",
+            "label": "Chapitre 2 - Promenade",
             "fields": [
-                {"id": "badge", "label": "Badge", "type": "text", "default": "NOTRE CHEMIN"},
-                {"id": "title", "label": "Titre", "type": "text", "default": "Main dans la main"},
-                {"id": "story", "label": "Histoire", "type": "textarea", "default": "Nous avons parcouru le monde ensemble..."},
-                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Asie, 2022"},
-                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1519225421980-715cb0215aed"}
+                {"id": "badge", "label": "Badge", "type": "text", "default": "LA PROMENADE"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "Mains dans les mains"},
+                {"id": "story", "label": "Texte", "type": "textarea", "default": "Nos mains se sont effleurées sur le Pont des Arts. Nous avons parlé jusqu'à l'aube."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Printemps 2021"},
+                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media", "default": "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4"},
+                {"id": "mediaCaption", "label": "Légende média", "type": "text", "default": "Les quais de Seine"}
             ]
         },
         {
-            "id": "event",
-            "label": "La Cérémonie",
+            "id": "ch3",
+            "label": "Chapitre 3 - Voyage",
             "fields": [
-                {"id": "title", "label": "Titre", "type": "text", "default": "Le grand jour"},
-                {"id": "date", "label": "Date", "type": "text", "default": "12 Juillet 2026"},
-                {"id": "location", "label": "Lieu", "type": "text", "default": "Château des Oliviers"}
+                {"id": "badge", "label": "Badge", "type": "text", "default": "LE VOYAGE"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "L'évasion"},
+                {"id": "story", "label": "Texte", "type": "textarea", "default": "Perdus dans les collines toscanes, chaque route menait l'un vers l'autre."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Été 2022"},
+                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?w=600&h=400&fit=crop"},
+                {"id": "mediaCaption", "label": "Val d'Orcia"}
+            ]
+        },
+        {
+            "id": "ch6",
+            "label": "Chapitre 6 - La Demande",
+            "fields": [
+                {"id": "badge", "label": "Badge", "type": "text", "default": "L'ENGAGEMENT"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "Le grand OUI"},
+                {"id": "story", "label": "Texte", "type": "textarea", "default": "Sous un ciel étoilé, un genou à terre, la plus belle réponse."},
+                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600&h=400&fit=crop"},
+                {"id": "mediaCaption", "label": "Elle a dit OUI ✨"}
+            ]
+        },
+        {
+            "id": "celebration",
+            "label": "L'Invitation",
+            "fields": [
+                {"id": "badge", "label": "Badge", "type": "text", "default": "CÉLÉBRATION"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "Nous nous marions"},
+                {"id": "story", "label": "Texte", "type": "textarea", "default": "Seriez-vous des nôtres pour écrire la suite ?"},
+                {"id": "date", "label": "Date", "type": "text", "default": "14 juin 2026"},
+                {"id": "location", "label": "Lieu", "type": "text", "default": "Château de Vaux-le-Vicomte"}
             ]
         }
     ]

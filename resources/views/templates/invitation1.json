@@ -4,29 +4,90 @@
     "price_per_pack": 15.00,
     "sections": [
         {
-            "id": "intro",
-            "label": "Introduction",
+            "id": "envelope",
+            "label": "L'Enveloppe",
             "fields": [
-                {"id": "groom", "label": "Nom du Marié", "type": "text", "default": "Tom"},
-                {"id": "bride", "label": "Nom de la Mariée", "type": "text", "default": "Sarah"}
+                {"id": "seal", "label": "Emoji du Sceau", "type": "text", "default": "💌"},
+                {"id": "front_text", "label": "Texte sur l'enveloppe", "type": "text", "default": "Emma & Louis"},
+                {"id": "hint", "label": "Indication d'ouverture", "type": "text", "default": "✉️ Touchez pour ouvrir"}
             ]
         },
         {
             "id": "ch1",
             "label": "Chapitre 1 - La Rencontre",
             "fields": [
+                {"id": "number", "label": "Numéro du chapitre", "type": "text", "default": "Chapitre I"},
                 {"id": "title", "label": "Titre", "type": "text", "default": "Le premier regard"},
-                {"id": "text", "label": "Histoire", "type": "textarea", "default": "On s'est rencontré lors d'une conférence..."},
-                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Paris, Octobre 2020"},
-                {"id": "media", "label": "Photo ou Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622"}
+                {"id": "text", "label": "Texte", "type": "textarea", "default": "C'était un soir d'automne, sous les lumières de la ville. Nos regards se sont croisés et le monde s'est arrêté."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Paris, 12 octobre 2020"},
+                {"id": "media", "label": "Image", "type": "media", "default": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&h=400&fit=crop"}
             ]
         },
         {
-            "id": "event",
-            "label": "Détails Techniques",
+            "id": "ch2",
+            "label": "Chapitre 2 - La Promenade",
             "fields": [
-                {"id": "date", "label": "Date", "type": "text", "default": "14 Juin 2026"},
-                {"id": "location", "label": "Lieu", "type": "text", "default": "Mairie de Paris"}
+                {"id": "number", "label": "Numéro du chapitre", "type": "text", "default": "Chapitre II"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "La promenade"},
+                {"id": "text", "label": "Texte", "type": "textarea", "default": "Nos mains se sont effleurées sur le Pont des Arts. Nous avons parlé jusqu'à l'aube."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Un matin de printemps 2021"},
+                {"id": "media", "label": "Vidéo", "type": "media", "default": "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4"}
+            ]
+        },
+        {
+            "id": "ch3",
+            "label": "Chapitre 3 - Le Voyage",
+            "fields": [
+                {"id": "number", "label": "Numéro du chapitre", "type": "text", "default": "Chapitre III"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "Le voyage"},
+                {"id": "text", "label": "Texte", "type": "textarea", "default": "Perdus dans les collines toscanes, nous avons compris que chaque route menait l'un vers l'autre."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Été 2022"},
+                {"id": "media", "label": "Image", "type": "media", "default": "https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?w=600&h=400&fit=crop"}
+            ]
+        },
+        {
+            "id": "ch4",
+            "label": "Chapitre 4 - Le Foyer",
+            "fields": [
+                {"id": "number", "label": "Numéro du chapitre", "type": "text", "default": "Chapitre IV"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "L'emménagement"},
+                {"id": "text", "label": "Texte", "type": "textarea", "default": "Notre petit cocon à deux, rempli de rires, de plantes et de projets."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Automne 2023"},
+                {"id": "media", "label": "Image", "type": "media", "default": "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=600&h=400&fit=crop"}
+            ]
+        },
+        {
+            "id": "ch5",
+            "label": "Chapitre 5 - L'Aventure",
+            "fields": [
+                {"id": "number", "label": "Numéro du chapitre", "type": "text", "default": "Chapitre V"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "Le voyage de rêve"},
+                {"id": "text", "label": "Texte", "type": "textarea", "default": "Des aurores boréales aux nuits étoilées, notre plus belle aventure."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Hiver 2024"},
+                {"id": "media", "label": "Vidéo", "type": "media", "default": "https://assets.mixkit.co/videos/preview/mixkit-aurora-borealis-over-snowy-mountains-4130-large.mp4"}
+            ]
+        },
+        {
+            "id": "ch6",
+            "label": "Chapitre 6 - La Demande",
+            "fields": [
+                {"id": "number", "label": "Numéro du chapitre", "type": "text", "default": "Chapitre VI"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "La demande"},
+                {"id": "text", "label": "Texte", "type": "textarea", "default": "Sous un ciel étoilé, un genou à terre, la plus belle question a reçu la plus belle réponse."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "23 septembre 2025"},
+                {"id": "subtitle", "label": "Sous-titre (Engagement)", "type": "text", "default": "Elle a dit oui 💍"},
+                {"id": "media", "label": "Image", "type": "media", "default": "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600&h=400&fit=crop"}
+            ]
+        },
+        {
+            "id": "celebration",
+            "label": "L'Invitation Finale",
+            "fields": [
+                {"id": "badge", "label": "Badge", "type": "text", "default": "Célébration"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "Nous nous marions"},
+                {"id": "text", "label": "Texte d'invitation", "type": "textarea", "default": "Et nous serions honorés de vous avoir à nos côtés."},
+                {"id": "date", "label": "Date de l'événement", "type": "text", "default": "14 juin 2026"},
+                {"id": "location", "label": "Lieu", "type": "text", "default": "Château de Vaux-le-Vicomte"}
             ]
         }
     ]

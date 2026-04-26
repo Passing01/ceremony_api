@@ -90,10 +90,19 @@ class EventController extends Controller
             }
 
             // Merge custom data with all fields
+            $customData = $request->input('custom_data', []);
+            if (is_string($customData)) $customData = json_decode($customData, true) ?? [];
+            
+            $data = $request->input('data', []);
+            if (is_string($data)) $data = json_decode($data, true) ?? [];
+
+            $customFields = $request->input('custom_fields', []);
+            if (is_string($customFields)) $customFields = json_decode($customFields, true) ?? [];
+
             $custom = array_merge(
-                $request->input('custom_data', []),
-                $request->input('data', []), // New data format from Flutter
-                $request->input('custom_fields', []),
+                $customData,
+                $data, // New data format from Flutter
+                $customFields,
                 $imageFields
             );
 
@@ -130,8 +139,13 @@ class EventController extends Controller
             ]);
 
             // Gestion automatique des invités si fournis
-            if ($request->has('guests')) {
-                foreach ($request->guests as $guestData) {
+            $guests = $request->input('guests');
+            if (is_string($guests)) {
+                $guests = json_decode($guests, true);
+            }
+
+            if (is_array($guests)) {
+                foreach ($guests as $guestData) {
                     $guest = $event->guests()->create([
                         'whatsapp_number' => $guestData['whatsapp_number'] ?? $guestData['phone'],
                         'invitation_token' => Str::uuid(),

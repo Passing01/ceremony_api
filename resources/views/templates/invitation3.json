@@ -4,33 +4,66 @@
     "price_per_pack": 12.00,
     "sections": [
         {
-            "id": "slide1",
-            "label": "Slide 1 - Accueil",
+            "id": "envelope",
+            "label": "Ouverture",
             "fields": [
-                {"id": "badge", "label": "Petit Titre", "type": "text", "default": "SAVE THE DATE"},
-                {"id": "title", "label": "Titre Principal", "type": "text", "default": "MES 20 ANS"},
-                {"id": "mediaSrc", "label": "Photo de fond", "type": "media", "default": "https://images.unsplash.com/photo-1530103043960-ef38714abb15"}
+                {"id": "seal", "label": "Emoji Sceau", "type": "text", "default": "💝"},
+                {"id": "names", "label": "Texte principal", "type": "text", "default": "Emma & Louis"}
+            ]
+        },
+        {
+            "id": "slide1",
+            "label": "Slide 1 - Introduction",
+            "fields": [
+                {"id": "badge", "label": "Badge", "type": "text", "default": "Chapitre I"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "Le premier regard"},
+                {"id": "story", "label": "Texte", "type": "textarea", "default": "C'était un soir d'automne, le monde s'est arrêté."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Paris, 2020"}
             ]
         },
         {
             "id": "slide2",
-            "label": "Slide 2 - Message",
+            "label": "Slide 2 - Média",
             "fields": [
-                {"id": "badge", "label": "Badge", "type": "text", "default": "L'HISTOIRE"},
-                {"id": "title", "label": "Titre", "type": "text", "default": "Déjà 20 ans"},
-                {"id": "story", "label": "Votre message", "type": "textarea", "default": "Le temps passe vite quand on s'amuse..."},
-                {"id": "mediaSrc", "label": "Photo/Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30"}
+                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&h=600&fit=crop"},
+                {"id": "caption", "label": "Légende", "type": "text", "default": "Pont Alexandre III"}
             ]
         },
         {
             "id": "slide3",
-            "label": "Slide 3 - Infos",
+            "label": "Slide 3 - Histoire",
             "fields": [
-                {"id": "badge", "label": "Badge", "type": "text", "default": "INFOS"},
-                {"id": "title", "label": "Titre", "type": "text", "default": "C'est quand ?"},
-                {"id": "date", "label": "Date et Heure", "type": "text", "default": "Samedi 25 Octobre, 20h"},
-                {"id": "location", "label": "Lieu", "type": "text", "default": "Le Rooftop, Paris"},
-                {"id": "mediaSrc", "label": "Photo décorative", "type": "media", "default": "https://images.unsplash.com/photo-1514525253344-99a42999aa2e"}
+                {"id": "badge", "label": "Badge", "type": "text", "default": "Chapitre II"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "La promenade"},
+                {"id": "story", "label": "Texte", "type": "textarea", "default": "Nos mains se sont effleurées sur le Pont des Arts."}
+            ]
+        },
+        {
+            "id": "slide4",
+            "label": "Slide 4 - Média",
+            "fields": [
+                {"id": "mediaSrc", "label": "Lien Vidéo", "type": "media", "default": "https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4"},
+                {"id": "caption", "label": "Légende", "type": "text", "default": "Les quais de Seine"}
+            ]
+        },
+        {
+            "id": "slide13",
+            "label": "Slide Mariage - Infos",
+            "fields": [
+                {"id": "badge", "label": "Badge", "type": "text", "default": "CÉLÉBRATION"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "Nous nous marions"},
+                {"id": "story", "label": "Texte", "type": "textarea", "default": "Seriez-vous des nôtres ?"},
+                {"id": "date", "label": "Date", "type": "text", "default": "14 Juin 2026"},
+                {"id": "location", "label": "Lieu", "type": "text", "default": "Château de Vaux-le-Vicomte"}
+            ]
+        },
+        {
+            "id": "slide14",
+            "label": "Slide RSVP",
+            "fields": [
+                {"id": "badge", "label": "Badge", "type": "text", "default": "RSVP"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "Votre réponse"},
+                {"id": "story", "label": "Texte", "type": "textarea", "default": "Dites-nous si vous serez là."}
             ]
         }
     ]

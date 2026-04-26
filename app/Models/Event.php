@@ -20,6 +20,7 @@ class Event extends Model
         'location',
         'custom_data',
         'invitation_text',
+        'cover_image',
         'short_link',
         'is_souvenir_enabled',
         'slug',
@@ -61,6 +62,13 @@ class Event extends Model
         // Add template config if template is loaded
         if ($this->relationLoaded('template')) {
             $attributes['template_config'] = $this->template ? $this->template->config_schema : null;
+        }
+
+        // cover_image URL
+        if (!empty($this->cover_image)) {
+            $attributes['cover_image_url'] = url('storage/' . $this->cover_image);
+        } else {
+            $attributes['cover_image_url'] = null;
         }
 
         return $attributes;

@@ -64,6 +64,7 @@ class EventController extends Controller
             'data' => 'nullable|array', // Support pour le format Flutter
             'custom_fields' => 'nullable|array',
             'invitation_text' => 'nullable|string|max:1000',
+            'cover_image' => 'nullable|image|max:5120', // 5MB max
         ]);
 
         $user = $request->user();
@@ -100,6 +101,12 @@ class EventController extends Controller
                 
                 $custom = array_merge($customData, $data, $imageFields);
 
+                // Handle cover_image upload
+                $coverImagePath = null;
+                if ($request->hasFile('cover_image')) {
+                    $coverImagePath = $request->file('cover_image')->store('events/covers', 'public');
+                }
+
                 $eventDate = $request->input('event_date') ?? now();
 
                 \Illuminate\Support\Facades\Log::info('Attempting Event::create');
@@ -111,6 +118,7 @@ class EventController extends Controller
                     'title' => $request->title,
                     'event_date' => $eventDate,
                     'invitation_text' => $request->input('invitation_text'),
+                    'cover_image' => $coverImagePath,
                     'location' => $request->input('location'),
                     'custom_data' => $custom,
                     'slug' => Str::slug($request->title) . '-' . Str::random(6),
@@ -160,15 +168,17 @@ class EventController extends Controller
         }
 
         $validated = $request->validate([
-            'template_id' => 'sometimes|exists:templates,id',
-            'title' => 'sometimes|string|max:255',
-            'event_date' => 'sometimes|date',
-            'location' => 'nullable|array',
-            'locations' => 'nullable|array',
-            'event_type' => 'sometimes|string',
-            'custom_data' => 'nullable|array',
-            'custom_fields' => 'nullable|array',
+            'template_id'     => 'sometimes|exists:templates,id',
+            'title'           => 'sometimes|string|max:255',
+            'event_date'      => 'sometimes|date',
+            'location'        => 'nullable|array',
+            'locations'       => 'nullable|array',
+            'event_type'      => 'sometimes|string',
+            'custom_data'     => 'nullable|array',
+            'data'            => 'nullable|array', // format Flutter
+            'custom_fields'   => 'nullable|array',
             'invitation_text' => 'nullable|string|max:1000',
+            'cover_image'     => 'nullable|image|max:5120',
         ]);
 
         // Validate event type if provided
@@ -201,11 +211,15 @@ class EventController extends Controller
                 }
             }
 
-            // Merge custom data
+            // Merge custom data (support data[] format from Flutter)
+            $dataFlutter = $request->input('data', []);
+            if (is_string($dataFlutter)) $dataFlutter = json_decode($dataFlutter, true) ?? [];
+
             $customMerged = array_merge(
                 $customExisting,
                 $request->input('custom_data', []),
                 $request->input('custom_fields', []),
+                $dataFlutter,
                 $imageFields
             );
 
@@ -242,8 +256,12 @@ class EventController extends Controller
                 $event->location = $locationPayload;
             }
 
-            $event->custom_data = $customMerged;
+            // cover_image update
+            if ($request->hasFile('cover_image')) {
+                $event->cover_image = $request->file('cover_image')->store('events/covers', 'public');
+            }
 
+            $event->custom_data = $customMerged;
             $event->save();
 
             return response()->json($event);

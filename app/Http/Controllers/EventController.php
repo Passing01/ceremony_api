@@ -61,14 +61,6 @@ class EventController extends Controller
             'track_id' => 'nullable|uuid|exists:tracks,id',
         ]);
 
-        // Validate event type exists
-        $eventTypes = config('event_types');
-        if (!isset($eventTypes[$request->event_type])) {
-            return response()->json([
-                'message' => 'Type d\'événement invalide'
-            ], 422);
-        }
-
         $user = $request->user();
 
         // Check credits

@@ -1,0 +1,42 @@
+{
+    "name": "Élégance Classique",
+    "category": "Mariage",
+    "price_per_pack": 15.00,
+    "sections": [
+        {
+            "id": "hero",
+            "label": "En-tête (Photo/Vidéo)",
+            "fields": [
+                {"id": "media", "label": "Photo ou Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=1000&fit=crop"}
+            ]
+        },
+        {
+            "id": "intro",
+            "label": "Introduction",
+            "fields": [
+                {"id": "label", "label": "Label haut", "type": "text", "default": "LE MARIAGE DE"},
+                {"id": "names", "label": "Noms du couple", "type": "text", "default": "Chloé & Hugo"},
+                {"id": "invitation_text", "label": "Texte d'invitation", "type": "textarea", "default": "Nous avons l'honneur de vous convier à la célébration de notre union"},
+                {"id": "quote", "label": "Citation", "type": "text", "default": "L'amour ne se voit pas avec les yeux mais avec le cœur."}
+            ]
+        },
+        {
+            "id": "event_details",
+            "label": "Date & Heure",
+            "fields": [
+                {"id": "title", "label": "Titre section", "type": "text", "default": "SAVE THE DATE"},
+                {"id": "date", "label": "Date et Heure", "type": "text", "default": "12 septembre 2026 · à 19h"}
+            ]
+        },
+        {
+            "id": "locations",
+            "label": "Lieux",
+            "fields": [
+                {"id": "civile_name", "label": "Nom Lieu Civil", "type": "text", "default": "Chapelle Saint-Martin"},
+                {"id": "civile_address", "label": "Adresse Civile", "type": "text", "default": "12 rue de l'Église, 78000 Versailles"},
+                {"id": "reception_name", "label": "Nom Lieu Réception", "type": "text", "default": "Domaine des Roses"},
+                {"id": "reception_address", "label": "Adresse Réception", "type": "text", "default": "8 chemin du Vieux Moulin, 78000 Versailles"}
+            ]
+        }
+    ]
+}

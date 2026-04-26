@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Chloé & Hugo · Mariage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', 'Georgia', 'Times New Roman', serif;
+            background: #f5f0e8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .invitation-container {
+            width: 100%;
+            max-width: 460px;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* ========== HERO : Photo/Vidéo ========== */
+        .hero-section {
+            position: relative;
+            width: 100%;
+            height: 520px;
+            overflow: hidden;
+            border-radius: 0;
+        }
+
+        .hero-section img,
+        .hero-section video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Overlay flou en bas */
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(to bottom, transparent 0%, rgba(245, 240, 232, 0.7) 70%, rgba(245, 240, 232, 1) 100%);
+            pointer-events: none;
+        }
+
+        /* Flèche retour */
+        .back-btn {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #5a5a5a;
+            cursor: pointer;
+            text-decoration: none;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        /* ========== SECTION 1 : Le mariage de... ========== */
+        .section-names {
+            background: #f5f0e8;
+            text-align: center;
+            padding: 10px 25px 30px;
+            position: relative;
+            z-index: 1;
+            margin-top: -60px;
+        }
+
+        .label-mariage {
+            font-size: 0.8rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: #8b7355;
+            margin-bottom: 6px;
+        }
+
+        .names {
+            font-size: 2.8rem;
+            color: #1a1a1a;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .names .et {
+            font-style: italic;
+            color: #c4a97d;
+            font-size: 2.2rem;
+        }
+
+        .divider-dot {
+            width: 6px;
+            height: 6px;
+            background: #c4a97d;
+            border-radius: 50%;
+            margin: 10px auto;
+        }
+
+        /* ========== CARTE 1 : Invitation ========== */
+        .card {
+            background: #ffffff;
+            margin: 0 0 10px 0;
+            padding: 30px 25px;
+            text-align: center;
+            border-radius: 2px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-invite {
+            padding: 30px 25px;
+        }
+
+        .card-invite p {
+            font-size: 1.1rem;
+            color: #5a5a5a;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .card-invite .quote {
+            font-style: italic;
+            color: #999;
+            font-size: 0.95rem;
+            margin-bottom: 18px;
+        }
+
+        .save-date-text {
+            font-size: 1.3rem;
+            color: #1a1a1a;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+        }
+
+        .save-date-date {
+            font-size: 0.95rem;
+            color: #8b7355;
+            margin-bottom: 18px;
+        }
+
+        .calendar-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cal-btn {
+            padding: 10px 18px;
+            border: 1px solid #d5cdbc;
+            border-radius: 25px;
+            background: white;
+            font-size: 0.8rem;
+            color: #5a5a5a;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .cal-btn:hover {
+            background: #faf8f3;
+            border-color: #c4a97d;
+        }
+
+        /* ========== CARTE 2 : Compte à rebours ========== */
+        .card-countdown {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            padding: 25px;
+        }
+
+        .count-item {
+            text-align: center;
+        }
+
+        .count-num {
+            font-size: 2rem;
+            color: #1a1a1a;
+            font-weight: 300;
+            display: block;
+            line-height: 1;
+        }
+
+        .count-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* ========== CARTE 3 & 4 : Lieux avec photo/vidéo ========== */
+        .card-lieu {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .card-lieu .lieu-media {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .card-lieu .lieu-media img,
+        .card-lieu .lieu-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .card-lieu .lieu-infos {
+            padding: 20px 25px;
+            text-align: center;
+        }
+
+        .lieu-type {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #c4a97d;
+            margin-bottom: 4px;
+        }
+
+        .lieu-nom {
+            font-size: 1.3rem;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .lieu-adresse {
+            font-size: 0.9rem;
+            color: #8b8b8b;
+            margin-bottom: 6px;
+        }
+
+        .lieu-map {
+            font-size: 0.85rem;
+            color: #c4a97d;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* ========== CARTE 5 : Programme ========== */
+        .card-programme {
+            text-align: center;
+            padding: 25px;
+        }
+
+        .card-programme h3 {
+            font-size: 1rem;
+            letter-spacing: 3px;
+            color: #1a1a1a;
+            margin-bottom: 18px;
+            text-transform: uppercase;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        .tl-item {
+            display: flex;
+            gap: 15px;
+            text-align: left;
+            align-items: baseline;
+        }
+
+        .tl-heure {
+            font-size: 0.95rem;
+            color: #8b7355;
+            min-width: 45px;
+            font-weight: 500;
+        }
+
+        .tl-text strong {
+            display: block;
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .tl-text {
+            font-size: 0.9rem;
+            color: #6b6b6b;
+        }
+
+        /* ========== CARTE 6 : Dress Code ========== */
+        .card-dresscode {
+            text-align: center;
+            padding: 25px;
+        }
+
+        .card-dresscode h3 {
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .dresscode-desc {
+            font-size: 1rem;
+            color: #6b6b6b;
+            line-height: 1.5;
+        }
+
+        .dresscode-colors {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+
+        .color-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        /* ========== CARTE 7 : Musique ========== */
+        .card-musique {
+            text-align: center;
+            padding: 25px;
+        }
+
+        .card-musique h3 {
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .card-musique .musique-intro {
+            font-size: 0.95rem;
+            color: #6b6b6b;
+            margin-bottom: 15px;
+        }
+
+        .musique-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .musique-form input {
+            padding: 12px 15px;
+            border: 1px solid #ddd5c5;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: #fdfbf6;
+            color: #3a3a3a;
+        }
+
+        .musique-form input:focus {
+            outline: none;
+            border-color: #c4a97d;
+            box-shadow: 0 0 0 3px rgba(196, 169, 125, 0.1);
+        }
+
+        .musique-form button {
+            padding: 12px;
+            background: #c4a97d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: background 0.3s;
+        }
+
+        .musique-form button:hover {
+            background: #b09668;
+        }
+
+        .musique-merci {
+            display: none;
+            color: #7a9a6d;
+            font-size: 0.95rem;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* ========== CARTE 8 : Remerciement ========== */
+        .card-remerciement {
+            text-align: center;
+            padding: 25px;
+        }
+
+        .card-remerciement p {
+            font-size: 1.05rem;
+            color: #6b6b6b;
+            line-height: 1.6;
+        }
+
+        .card-remerciement .heart {
+            color: #c4a97d;
+            font-size: 1.4rem;
+            margin-top: 8px;
+        }
+
+        /* ========== CARTE 9 : RSVP ========== */
+        .card-rsvp {
+            text-align: center;
+            padding: 25px;
+        }
+
+        .card-rsvp h3 {
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .rsvp-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .rsvp-form input,
+        .rsvp-form select,
+        .rsvp-form textarea {
+            padding: 12px 15px;
+            border: 1px solid #ddd5c5;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: #fdfbf6;
+            color: #3a3a3a;
+        }
+
+        .rsvp-form input:focus,
+        .rsvp-form select:focus,
+        .rsvp-form textarea:focus {
+            outline: none;
+            border-color: #c4a97d;
+            box-shadow: 0 0 0 3px rgba(196, 169, 125, 0.1);
+        }
+
+        .rsvp-form button {
+            padding: 12px;
+            background: #c4a97d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: background 0.3s;
+        }
+
+        .rsvp-form button:hover {
+            background: #b09668;
+        }
+
+        .rsvp-merci {
+            display: none;
+            color: #7a9a6d;
+            font-size: 1rem;
+            margin-top: 12px;
+            font-style: italic;
+        }
+
+        @media (max-width: 420px) {
+            .hero-section {
+                height: 380px;
+            }
+
+            .names {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="invitation-container">
+
+        <!-- ========== HERO : Photo ou Vidéo ========== -->
+        <div class="hero-section">
+            <a href="#" class="back-btn" aria-label="Retour">←</a>
+            <!-- Remplacez par votre photo -->
+            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=1000&fit=crop"
+                alt="Chloé & Hugo">
+            <!-- OU vidéo : -->
+            <!-- <video src="votre-video.mp4" autoplay muted loop playsinline></video> -->
+            <div class="hero-overlay"></div>
+        </div>
+
+        <!-- ========== SECTION 1 : Le mariage de... ========== -->
+        <div class="section-names">
+            <div class="label-mariage">LE MARIAGE DE</div>
+            <div class="names">Chloé <span class="et">&</span> Hugo</div>
+            <div class="divider-dot"></div>
+        </div>
+
+        <!-- ========== CARTE 1 : Invitation ========== -->
+        <div class="card card-invite">
+            <p>Nous avons l'honneur de vous convier à la célébration de notre union</p>
+            <p class="quote">L'amour ne se voit pas avec les yeux mais avec le cœur.</p>
+            <div class="save-date-text">SAVE THE DATE</div>
+            <div class="save-date-date">12 septembre 2026 · à 19h</div>
+            <div class="calendar-btns">
+                <a href="#" class="cal-btn">📅 Apple Calendar</a>
+                <a href="#" class="cal-btn">📅 Google Calendar</a>
+            </div>
+        </div>
+
+        <!-- ========== CARTE 2 : Compte à rebours ========== -->
+        <div class="card card-countdown" id="countdown">
+            <div class="count-item">
+                <span class="count-num" id="days">139</span>
+                <span class="count-label">Jours</span>
+            </div>
+            <div class="count-item">
+                <span class="count-num" id="hours">02</span>
+                <span class="count-label">Heures</span>
+            </div>
+            <div class="count-item">
+                <span class="count-num" id="minutes">36</span>
+                <span class="count-label">Min</span>
+            </div>
+            <div class="count-item">
+                <span class="count-num" id="seconds">55</span>
+                <span class="count-label">Sec</span>
+            </div>
+        </div>
+
+        <!-- ========== CARTE 3 : Cérémonie ========== -->
+        <div class="card card-lieu">
+            <div class="lieu-media">
+                <img src="https://images.unsplash.com/photo-1510076857177-7470076d4098?w=800&h=400&fit=crop"
+                    alt="Chapelle Saint-Martin">
+            </div>
+            <div class="lieu-infos">
+                <div class="lieu-type">CÉRÉMONIE CIVILE — 15:00</div>
+                <div class="lieu-nom">Chapelle Saint-Martin</div>
+                <div class="lieu-adresse">12 rue de l'Église, 78000 Versailles</div>
+                <a href="#" class="lieu-map">Voir sur Google Maps →</a>
+            </div>
+        </div>
+
+        <!-- ========== CARTE 4 : Réception ========== -->
+        <div class="card card-lieu">
+            <div class="lieu-media">
+                <img src="https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&h=400&fit=crop"
+                    alt="Domaine des Roses">
+            </div>
+            <div class="lieu-infos">
+                <div class="lieu-type">RÉCEPTION — 17:00</div>
+                <div class="lieu-nom">Domaine des Roses</div>
+                <div class="lieu-adresse">8 chemin du Vieux Moulin, 78000 Versailles</div>
+                <a href="#" class="lieu-map">Voir sur Google Maps →</a>
+            </div>
+        </div>
+
+        <!-- ========== CARTE 5 : Programme ========== -->
+        <div class="card card-programme">
+            <h3>Programme de la journée</h3>
+            <div class="timeline">
+                <div class="tl-item">
+                    <div class="tl-heure">15h00</div>
+                    <div class="tl-text"><strong>Cérémonie</strong>Chapelle Saint-Martin</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-heure">17h00</div>
+                    <div class="tl-text"><strong>Vin d'honneur</strong>Domaine des Roses</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-heure">19h30</div>
+                    <div class="tl-text"><strong>Dîner</strong></div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-heure">22h30</div>
+                    <div class="tl-text"><strong>Soirée dansante</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== CARTE 6 : Dress Code ========== -->
+        <div class="card card-dresscode">
+            <h3>Dress Code</h3>
+            <p class="dresscode-desc">Tenue de cocktail — Couleurs pastel ou tons nature</p>
+            <div class="dresscode-colors">
+                <div class="color-dot" style="background:#e8d5c4;"></div>
+                <div class="color-dot" style="background:#d4c5b2;"></div>
+                <div class="color-dot" style="background:#c4a97d;"></div>
+                <div class="color-dot" style="background:#b8d4c8;"></div>
+                <div class="color-dot" style="background:#d5c8e0;"></div>
+            </div>
+        </div>
+
+        <!-- ========== CARTE 7 : Musique ========== -->
+        <div class="card card-musique">
+            <h3>Votre chanson</h3>
+            <p class="musique-intro">Une chanson que vous aimeriez entendre pendant la soirée ?</p>
+            <form class="musique-form" id="musiqueForm">
+                <input type="text" placeholder="Votre prénom" required id="musiquePrenom">
+                <input type="text" placeholder="Lien YouTube ou titre de la chanson" required id="musiqueChanson">
+                <button type="submit">Proposer 🎵</button>
+            </form>
+            <div class="musique-merci" id="musiqueMerci">Merci ! Votre chanson a bien été ajoutée à la playlist ✨</div>
+        </div>
+
+        <!-- ========== CARTE 8 : Remerciement ========== -->
+        <div class="card card-remerciement">
+            <p>Votre présence est le plus beau des cadeaux.<br>Nous avons hâte de partager ce moment avec vous.</p>
+            <div class="heart">♥</div>
+        </div>
+
+        <!-- ========== CARTE 9 : RSVP ========== -->
+        <div class="card card-rsvp">
+            <h3>Confirmation</h3>
+            <form class="rsvp-form" id="rsvpForm">
+                <input type="text" placeholder="Votre nom complet" required id="rsvpNom">
+                <input type="email" placeholder="Votre email" required id="rsvpEmail">
+                <select required id="rsvpPresence">
+                    <option value="">Serez-vous présent(e) ?</option>
+                    <option value="oui">✨ Avec grand plaisir !</option>
+                    <option value="non">💔 Malheureusement non</option>
+                </select>
+                <input type="number" placeholder="Nombre d'accompagnants" min="0" max="8" value="0" id="rsvpInvites">
+                <textarea placeholder="Un petit mot pour les mariés..." rows="3" id="rsvpMessage"></textarea>
+                <button type="submit">Confirmer ✨</button>
+            </form>
+            <div class="rsvp-merci" id="rsvpMerci">Merci ! Votre réponse a bien été enregistrée 💛</div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // ========== COMPTE À REBOURS ==========
+        (function () {
+            const weddingDate = new Date('2026-09-12T19:00:00');
+
+            function updateCountdown() {
+                const now = new Date();
+                const diff = weddingDate - now;
+
+                if (diff <= 0) {
+                    document.getElementById('days').textContent = '0';
+                    document.getElementById('hours').textContent = '00';
+                    document.getElementById('minutes').textContent = '00';
+                    document.getElementById('seconds').textContent = '00';
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('days').textContent = days;
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            }
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        })();
+
+        // ========== FORMULAIRE MUSIQUE ==========
+        document.getElementById('musiqueForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            document.getElementById('musiqueForm').style.display = 'none';
+            document.getElementById('musiqueMerci').style.display = 'block';
+        });
+
+        // ========== FORMULAIRE RSVP ==========
+        document.getElementById('rsvpForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const nom = document.getElementById('rsvpNom').value.trim();
+            const email = document.getElementById('rsvpEmail').value.trim();
+            const presence = document.getElementById('rsvpPresence').value;
+
+            if (!nom || !email || !presence) {
+                alert('Merci de remplir tous les champs obligatoires 🌸');
+                return;
+            }
+
+            document.getElementById('rsvpForm').style.display = 'none';
+            document.getElementById('rsvpMerci').style.display = 'block';
+        });
+    </script>
+</body>
+
+</html>

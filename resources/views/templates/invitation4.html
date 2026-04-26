@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Chloé & Hugo · Mariage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', 'Georgia', 'Times New Roman', serif;
+            background: #f5f0e8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Carte principale */
+        .invitation-wrapper {
+            width: 100%;
+            max-width: 460px;
+            background: #ffffff;
+            border-radius: 0;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        /* Photo / Vidéo en haut */
+        .hero-media {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            overflow: hidden;
+            background: #e8e0d5;
+        }
+
+        .hero-media img,
+        .hero-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Flèche retour superposée */
+        .back-arrow {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #5a5a5a;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            z-index: 2;
+            text-decoration: none;
+        }
+
+        /* Contenu texte */
+        .content-section {
+            padding: 30px 25px 20px;
+            text-align: center;
+            position: relative;
+            background: #ffffff;
+        }
+
+        /* Ligne décorative */
+        .divider-line {
+            width: 50px;
+            height: 1px;
+            background: #c4a97d;
+            margin: 0 auto 20px;
+        }
+
+        .divider-line.top {
+            margin-bottom: 15px;
+        }
+
+        /* Titre principal */
+        .main-title {
+            font-size: 1.0rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: #8b7355;
+            font-weight: 400;
+            margin-bottom: 5px;
+        }
+
+        .couple-names {
+            font-size: 2.8rem;
+            color: #1a1a1a;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 18px;
+            line-height: 1.1;
+        }
+
+        .couple-names .ampersand {
+            font-style: italic;
+            color: #c4a97d;
+            font-size: 2.2rem;
+        }
+
+        .invitation-text {
+            font-size: 1.15rem;
+            color: #6b6b6b;
+            line-height: 1.6;
+            margin-bottom: 18px;
+            font-weight: 300;
+        }
+
+        .quote-text {
+            font-size: 1rem;
+            color: #999;
+            font-style: italic;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        /* Bouton Save the Date */
+        .save-date-btn {
+            display: inline-block;
+            padding: 12px 40px;
+            border: 1px solid #c4a97d;
+            color: #8b7355;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-size: 0.85rem;
+            text-decoration: none;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        .save-date-btn:hover {
+            background: #f9f5ef;
+            border-color: #a0845c;
+        }
+
+        /* Section Date & Countdown */
+        .date-section {
+            text-align: center;
+            padding: 20px 25px;
+            border-top: 1px solid #f0ebe0;
+        }
+
+        .date-main {
+            font-size: 1.5rem;
+            color: #1a1a1a;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .date-time {
+            font-size: 1rem;
+            color: #8b7355;
+            margin-bottom: 20px;
+        }
+
+        /* Boutons calendrier */
+        .calendar-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .calendar-btn {
+            padding: 10px 18px;
+            border: 1px solid #e0d8c6;
+            border-radius: 25px;
+            background: white;
+            font-size: 0.85rem;
+            color: #5a5a5a;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-btn:hover {
+            background: #faf8f3;
+            border-color: #c4a97d;
+        }
+
+        /* Countdown */
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .countdown-item {
+            text-align: center;
+        }
+
+        .countdown-number {
+            font-size: 2rem;
+            color: #1a1a1a;
+            font-weight: 300;
+            display: block;
+        }
+
+        .countdown-label {
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+        }
+
+        /* Lieux */
+        .locations {
+            text-align: center;
+            padding: 15px 25px;
+            border-top: 1px solid #f0ebe0;
+        }
+
+        .location-block {
+            margin-bottom: 18px;
+        }
+
+        .location-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #c4a97d;
+            margin-bottom: 5px;
+        }
+
+        .location-name {
+            font-size: 1.2rem;
+            color: #1a1a1a;
+            margin-bottom: 3px;
+        }
+
+        .location-address {
+            font-size: 0.9rem;
+            color: #8b8b8b;
+            margin-bottom: 5px;
+        }
+
+        .map-link {
+            font-size: 0.85rem;
+            color: #c4a97d;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* Programme */
+        .program {
+            text-align: center;
+            padding: 20px 25px 30px;
+            border-top: 1px solid #f0ebe0;
+        }
+
+        .program-title {
+            font-size: 1.1rem;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 14px;
+            text-align: left;
+            max-width: 280px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .timeline-time {
+            font-size: 1rem;
+            color: #8b7355;
+            font-weight: 500;
+            min-width: 50px;
+        }
+
+        .timeline-desc {
+            font-size: 0.95rem;
+            color: #5a5a5a;
+        }
+
+        .timeline-desc strong {
+            display: block;
+            color: #1a1a1a;
+        }
+
+        @media (max-width: 420px) {
+            .hero-media {
+                height: 380px;
+            }
+
+            .couple-names {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="invitation-wrapper">
+
+        <!-- HERO : Photo ou Vidéo -->
+        <div class="hero-media">
+            <!-- Flèche retour -->
+            <a href="#" class="back-arrow" aria-label="Retour">←</a>
+            <!-- Image (remplacez par votre photo) -->
+            <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=1000&fit=crop"
+                alt="Chloé & Hugo">
+            <!-- OU Vidéo : décommentez ci-dessous et commentez l'image -->
+            <!-- <video src="votre-video.mp4" autoplay muted loop playsinline></video> -->
+        </div>
+
+        <!-- CONTENU PRINCIPAL -->
+        <div class="content-section">
+            <div class="divider-line top"></div>
+            <div class="main-title">LE MARIAGE DE</div>
+            <div class="couple-names">Chloé <span class="ampersand">&</span> Hugo</div>
+            <p class="invitation-text">Nous avons l'honneur de vous convier à la célébration de notre union</p>
+            <p class="quote-text">L'amour ne se voit pas avec les yeux mais avec le cœur.</p>
+            <a href="#" class="save-date-btn">SAVE THE DATE</a>
+        </div>
+
+        <!-- DATE & COUNTDOWN -->
+        <div class="date-section">
+            <div class="date-main">SAVE THE DATE</div>
+            <div class="date-time">12 septembre 2026 · à 19h</div>
+
+            <!-- Boutons calendrier -->
+            <div class="calendar-buttons">
+                <a href="#" class="calendar-btn">📅 Apple Calendar</a>
+                <a href="#" class="calendar-btn">📅 Google Calendar</a>
+            </div>
+
+            <!-- Compte à rebours -->
+            <div class="countdown" id="countdown">
+                <div class="countdown-item">
+                    <span class="countdown-number" id="days">138</span>
+                    <span class="countdown-label">JOURS</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="hours">--</span>
+                    <span class="countdown-label">HEURES</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="minutes">--</span>
+                    <span class="countdown-label">MIN</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="seconds">--</span>
+                    <span class="countdown-label">SEC</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIEUX -->
+        <div class="locations">
+            <div class="location-block">
+                <div class="location-title">CÉRÉMONIE CIVILE — 15:00</div>
+                <div class="location-name">Chapelle Saint-Martin</div>
+                <div class="location-address">12 rue de l'Église, 78000 Versailles</div>
+                <a href="#" class="map-link">Voir sur Google Maps →</a>
+            </div>
+
+            <div class="location-block">
+                <div class="location-title">RÉCEPTION — 17:00</div>
+                <div class="location-name">Domaine des Roses</div>
+                <div class="location-address">8 chemin du Vieux Moulin, 78000 Versailles</div>
+                <a href="#" class="map-link">Voir sur Google Maps →</a>
+            </div>
+        </div>
+
+        <!-- PROGRAMME -->
+        <div class="program">
+            <div class="program-title">Programme de la journée</div>
+
+            <div class="timeline-item">
+                <div class="timeline-time">15h00</div>
+                <div class="timeline-desc"><strong>Cérémonie</strong>Chapelle Saint-Martin</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-time">17h00</div>
+                <div class="timeline-desc"><strong>Vin d'honneur</strong>Domaine des Roses</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-time">19h30</div>
+                <div class="timeline-desc"><strong>Dîner</strong></div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-time">22h30</div>
+                <div class="timeline-desc"><strong>Soirée dansante</strong></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- COMPTE À REBOURS DYNAMIQUE -->
+    <script>
+        (function () {
+            const weddingDate = new Date('2026-09-12T19:00:00');
+
+            function updateCountdown() {
+                const now = new Date();
+                const diff = weddingDate - now;
+
+                if (diff <= 0) {
+                    document.getElementById('days').textContent = '0';
+                    document.getElementById('hours').textContent = '00';
+                    document.getElementById('minutes').textContent = '00';
+                    document.getElementById('seconds').textContent = '00';
+                    return;
+                }
+
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('days').textContent = days;
+                document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+                document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+                document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+            }
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        })();
+    </script>
+</body>
+
+</html>

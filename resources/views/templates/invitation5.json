@@ -1,0 +1,59 @@
+{
+    "name": "Mariage Prestige (Multi-Cartes)",
+    "category": "Mariage",
+    "price_per_pack": 25.00,
+    "sections": [
+        {
+            "id": "hero",
+            "label": "Photo de Couverture",
+            "fields": [
+                {"id": "media", "label": "Image/Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=1000&fit=crop"}
+            ]
+        },
+        {
+            "id": "intro",
+            "label": "Annonce",
+            "fields": [
+                {"id": "names", "label": "Prénoms", "type": "text", "default": "Chloé & Hugo"}
+            ]
+        },
+        {
+            "id": "event_details",
+            "label": "Invitation Principale",
+            "fields": [
+                {"id": "text", "label": "Texte", "type": "textarea", "default": "Nous avons l'honneur de vous convier à la célébration de notre union"},
+                {"id": "quote", "label": "Citation", "type": "text", "default": "L'amour ne se voit pas avec les yeux mais avec le cœur."},
+                {"id": "date_label", "label": "Label Date", "type": "text", "default": "SAVE THE DATE"},
+                {"id": "date", "label": "Date et Heure", "type": "text", "default": "12 septembre 2026 · à 19h"}
+            ]
+        },
+        {
+            "id": "location_civile",
+            "label": "Lieu : Cérémonie",
+            "fields": [
+                {"id": "media", "label": "Photo Lieu", "type": "media", "default": "https://images.unsplash.com/photo-1510076857177-7470076d4098?w=800&h=400&fit=crop"},
+                {"id": "title", "label": "Type Cérémonie", "type": "text", "default": "CÉRÉMONIE CIVILE — 15:00"},
+                {"id": "name", "label": "Nom du Lieu", "type": "text", "default": "Chapelle Saint-Martin"},
+                {"id": "address", "label": "Adresse", "type": "text", "default": "12 rue de l'Église, 78000 Versailles"}
+            ]
+        },
+        {
+            "id": "location_reception",
+            "label": "Lieu : Réception",
+            "fields": [
+                {"id": "media", "label": "Photo Lieu", "type": "media", "default": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&h=400&fit=crop"},
+                {"id": "title", "label": "Type Réception", "type": "text", "default": "RÉCEPTION — 17:00"},
+                {"id": "name", "label": "Nom du Lieu", "type": "text", "default": "Domaine des Roses"},
+                {"id": "address", "label": "Adresse", "type": "text", "default": "8 chemin du Vieux Moulin, 78000 Versailles"}
+            ]
+        },
+        {
+            "id": "dresscode",
+            "label": "Dress Code",
+            "fields": [
+                {"id": "title", "label": "Titre", "type": "text", "default": "Dress Code"},
+                {"id": "description", "label": "Description", "type": "text", "default": "Tenue de cocktail — Couleurs pastel ou tons nature"}
+            ]
+        }
+    ]
+}

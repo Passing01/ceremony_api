@@ -96,32 +96,39 @@ class EventController extends Controller
                 // Merge data
                 $customData = $request->input('custom_data', []);
                 if (is_string($customData)) $customData = json_decode($customData, true) ?? [];
-                // Recursive function to handle nested file uploads in the 'data' array
+                // Recursive function to handle nested file uploads
                 $processNestedFiles = function ($array, $prefix = '') use (&$processNestedFiles, $request) {
+                    $result = [];
                     foreach ($array as $key => $value) {
                         $fullKey = $prefix ? "{$prefix}[{$key}]" : $key;
                         
                         if ($request->hasFile($fullKey)) {
                             $path = $request->file($fullKey)->store('events/media', 'public');
-                            $array[$key] = $path;
+                            $result[$key] = $path;
                         } elseif (is_array($value)) {
-                            $array[$key] = $processNestedFiles($value, $fullKey);
+                            $result[$key] = $processNestedFiles($value, $fullKey);
+                        } else {
+                            $result[$key] = $value;
                         }
                     }
-                    return $array;
+                    return $result;
                 };
 
-                // Parse data and handle nested files
-                $data = $request->input('data', []);
-                if (is_string($data)) $data = json_decode($data, true) ?? [];
-                $data = $processNestedFiles($data, 'data');
+                // Get all data from request and process files
+                $allInput = $request->all();
+                $processedInput = $processNestedFiles($allInput);
                 
-                // Merge everything into custom_data
-                $custom = array_merge($customData, $data, $imageFields);
-
-                // Handle cover_image upload
-                $coverImagePath = null;
-                if ($request->hasFile('cover_image')) {
+                // Extract what we need
+                $title = $processedInput['title'] ?? $request->title;
+                $invitationText = $processedInput['invitation_text'] ?? $request->invitation_text;
+                $dataFlutter = $processedInput['data'] ?? [];
+                $customDataInput = $processedInput['custom_data'] ?? [];
+                
+                $custom = array_merge($customDataInput, $dataFlutter, $imageFields);
+                
+                // Handle cover_image specifically (it's at root in Flutter data)
+                $coverImagePath = $processedInput['cover_image'] ?? null;
+                if (!$coverImagePath && $request->hasFile('cover_image')) {
                     $coverImagePath = $request->file('cover_image')->store('events/covers', 'public');
                 }
 
@@ -133,13 +140,13 @@ class EventController extends Controller
                     'template_id' => $request->template_id,
                     'track_id' => $request->input('track_id'),
                     'event_type' => $eventType,
-                    'title' => $request->title,
+                    'title' => $title,
                     'event_date' => $eventDate,
-                    'invitation_text' => $request->input('invitation_text'),
+                    'invitation_text' => $invitationText,
                     'cover_image' => $coverImagePath,
                     'location' => $request->input('location'),
                     'custom_data' => $custom,
-                    'slug' => Str::slug($request->title) . '-' . Str::random(6),
+                    'slug' => Str::slug($title) . '-' . Str::random(6),
                     'short_link' => Str::random(10),
                 ]);
                 \Illuminate\Support\Facades\Log::info('Event created', ['id' => $event->id]);
@@ -212,17 +219,24 @@ class EventController extends Controller
         return DB::transaction(function () use ($request, $event, $validated) {
             // Recursive function to handle nested file uploads
             $processNestedFiles = function ($array, $prefix = '') use (&$processNestedFiles, $request) {
+                $result = [];
                 foreach ($array as $key => $value) {
                     $fullKey = $prefix ? "{$prefix}[{$key}]" : $key;
                     if ($request->hasFile($fullKey)) {
                         $path = $request->file($fullKey)->store('events/media', 'public');
-                        $array[$key] = $path;
+                        $result[$key] = $path;
                     } elseif (is_array($value)) {
-                        $array[$key] = $processNestedFiles($value, $fullKey);
+                        $result[$key] = $processNestedFiles($value, $fullKey);
+                    } else {
+                        $result[$key] = $value;
                     }
                 }
-                return $array;
+                return $result;
             };
+
+            // Get all data from request and process files
+            $allInput = $request->all();
+            $processedInput = $processNestedFiles($allInput);
 
             // Get event type configuration
             $eventType = $request->input('event_type', $event->event_type);
@@ -240,15 +254,15 @@ class EventController extends Controller
                 }
             }
 
-            // Merge custom data (including nested files from 'data')
-            $dataFlutter = $request->input('data', []);
-            if (is_string($dataFlutter)) $dataFlutter = json_decode($dataFlutter, true) ?? [];
-            $dataFlutter = $processNestedFiles($dataFlutter, 'data');
+            // Extract processed data
+            $dataFlutter = $processedInput['data'] ?? [];
+            $customDataInput = $processedInput['custom_data'] ?? [];
+            $customFieldsInput = $processedInput['custom_fields'] ?? [];
 
             $customMerged = array_merge(
                 $event->custom_data ?? [],
-                $request->input('custom_data', []),
-                $request->input('custom_fields', []),
+                $customDataInput,
+                $customFieldsInput,
                 $dataFlutter,
                 $imageFields
             );
@@ -256,13 +270,16 @@ class EventController extends Controller
             // Apply scalar updates
             if ($request->has('template_id')) $event->template_id = (int) $request->template_id;
             if ($request->has('event_type')) $event->event_type = $request->event_type;
-            if ($request->has('title')) $event->title = $request->title;
-            if ($request->has('event_date')) $event->event_date = $request->event_date;
-            if ($request->has('invitation_text')) $event->invitation_text = $request->invitation_text;
-            if ($request->has('location')) $event->location = $request->location;
+            if ($request->has('title')) $event->title = $processedInput['title'] ?? $request->title;
+            if ($request->has('event_date')) $event->event_date = $processedInput['event_date'] ?? $request->event_date;
+            if ($request->has('invitation_text')) $event->invitation_text = $processedInput['invitation_text'] ?? $request->invitation_text;
+            if ($request->has('location')) $event->location = $processedInput['location'] ?? $request->location;
 
             // cover_image update
-            if ($request->hasFile('cover_image')) {
+            $coverImagePath = $processedInput['cover_image'] ?? null;
+            if ($coverImagePath) {
+                $event->cover_image = $coverImagePath;
+            } elseif ($request->hasFile('cover_image')) {
                 $event->cover_image = $request->file('cover_image')->store('events/covers', 'public');
             }
 

@@ -100,7 +100,7 @@ class EventController extends Controller
                 $processNestedFiles = function ($array, $prefix = '') use (&$processNestedFiles, $request) {
                     $result = [];
                     foreach ($array as $key => $value) {
-                        $fullKey = $prefix ? "{$prefix}[{$key}]" : $key;
+                        $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
                         
                         if ($request->hasFile($fullKey)) {
                             $path = $request->file($fullKey)->store('events/media', 'public');
@@ -118,18 +118,14 @@ class EventController extends Controller
                 $allInput = $request->all();
                 $processedInput = $processNestedFiles($allInput);
                 
-                // Extract what we need
-                $title = $processedInput['title'] ?? $request->title;
-                $invitationText = $processedInput['invitation_text'] ?? $request->invitation_text;
-                $dataFlutter = $processedInput['data'] ?? [];
-                $customDataInput = $processedInput['custom_data'] ?? [];
+                // Extract core data
+                $title = $processedInput['title'] ?? $request->title ?? 'Sans titre';
+                $invitationText = $processedInput['invitation_text'] ?? $request->invitation_text ?? '';
+                $customData = $processedInput['data'] ?? [];
                 
-                $custom = array_merge($customDataInput, $dataFlutter, $imageFields);
-                
-                // Handle cover_image specifically (it's at root in Flutter data)
-                $coverImagePath = $processedInput['cover_image'] ?? null;
-                if (!$coverImagePath && $request->hasFile('cover_image')) {
-                    $coverImagePath = $request->file('cover_image')->store('events/covers', 'public');
+                // Explicitly handle cover_image if present at root
+                if (isset($processedInput['cover_image'])) {
+                    $customData['cover_image'] = $processedInput['cover_image'];
                 }
 
                 $eventDate = $request->input('event_date') ?? now();
@@ -138,16 +134,11 @@ class EventController extends Controller
                 $event = Event::create([
                     'owner_id' => $user->id,
                     'template_id' => $request->template_id,
-                    'track_id' => $request->input('track_id'),
-                    'event_type' => $eventType,
                     'title' => $title,
                     'event_date' => $eventDate,
                     'invitation_text' => $invitationText,
-                    'cover_image' => $coverImagePath,
-                    'location' => $request->input('location'),
-                    'custom_data' => $custom,
-                    'slug' => Str::slug($title) . '-' . Str::random(6),
-                    'short_link' => Str::random(10),
+                    'custom_data' => $customData,
+                    'status' => 'active',
                 ]);
                 \Illuminate\Support\Facades\Log::info('Event created', ['id' => $event->id]);
 

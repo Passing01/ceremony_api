@@ -202,12 +202,6 @@ class TemplateBuilderController extends Controller
                 // Fallback intelligent
                 $fallbackData = $defaults;
                 if ($sectionId === 'intro' || $sectionId === 'hero' || $sectionId === 'ch1') {
-                    if (isset($customData['company_name'])) $fallbackData['names'] = $customData['company_name'];
-                    if (isset($customData['company_name'])) $fallbackData['title'] = $customData['company_name'];
-                    if (isset($customData['company_logo'])) $fallbackData['media'] = url('storage/' . $customData['company_logo']);
-                    if (isset($customData['company_logo'])) $fallbackData['mediaSrc'] = url('storage/' . $customData['company_logo']);
-                    if (isset($customData['agenda'])) $fallbackData['story'] = $customData['agenda'];
-                    if (isset($customData['event_purpose'])) $fallbackData['badge'] = $customData['event_purpose'];
                     $dataArray[] = $fallbackData;
                 }
             }
@@ -252,17 +246,7 @@ class TemplateBuilderController extends Controller
             $mappedIntro['names'] = $event->title;
         }
 
-        // Fallback pour les données d'entreprise / corporate
-        if (empty($mappedIntro['names']) && isset($raw['company_name'])) {
-            $mappedIntro['names'] = $raw['company_name'];
-            $mappedIntro['front_text'] = $raw['company_name'];
-            if (isset($raw['event_purpose'])) $mappedIntro['subtitle'] = $raw['event_purpose'];
-        }
-        if (empty($mappedDetails['text']) && isset($raw['agenda'])) {
-            $mappedDetails['text'] = $raw['agenda'];
-            $mappedDetails['story'] = $raw['agenda'];
-            if (isset($raw['dress_code'])) $mappedDetails['quote'] = "Dress code : " . $raw['dress_code'];
-        }
+        // Fin des mappings de secours
 
         $domReplacements = json_encode([
             'hero'          => $prefixStorage($mappedHero),

@@ -14,6 +14,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         //
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
-        //
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $e, \Illuminate\Http\Request $request) {
+            if ($e->getStatusCode() === 403) {
+                \Illuminate\Support\Facades\Log::error('403 FORBIDDEN DETECTED', [
+                    'message' => $e->getMessage(),
+                    'headers' => $request->headers->all(),
+                    'user' => $request->user()?->id
+                ]);
+            }
+        });
     })->create();

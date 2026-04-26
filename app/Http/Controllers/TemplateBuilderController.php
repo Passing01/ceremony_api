@@ -9,6 +9,7 @@ class TemplateBuilderController extends Controller
 {
     public function index()
     {
+        $this->syncTemplates();
         $templates = \App\Models\Template::where('is_active', true)
             ->where('config_schema->type', 'html')
             ->get();
@@ -16,14 +17,52 @@ class TemplateBuilderController extends Controller
         return view('builder.index', compact('templates'));
     }
 
+    private function syncTemplates()
+    {
+        $path = resource_path('views/templates');
+        if (!File::exists($path)) return;
+
+        $files = File::files($path);
+        foreach ($files as $file) {
+            $filename = $file->getFilename();
+            if (!str_ends_with($filename, '.html')) continue;
+
+            $exists = \App\Models\Template::where('config_schema->file', $filename)->exists();
+            if (!$exists) {
+                $name = ucwords(str_replace(['_', '.html'], [' ', ''], $filename));
+                \App\Models\Template::create([
+                    'name' => $name,
+                    'category' => 'Général',
+                    'price_per_pack' => 10.00,
+                    'is_active' => true,
+                    'config_schema' => ['type' => 'html', 'file' => $filename]
+                ]);
+            }
+        }
+    }
+
     public function edit($id)
     {
         $template = \App\Models\Template::findOrFail($id);
-        $templateFile = $template->config_schema['file'] ?? "invitation{$id}.html";
+        
+        // Récupérer le nom du fichier depuis config_schema ou tenter une déduction
+        $templateFile = $template->config_schema['file'] ?? null;
+        
+        if (!$templateFile) {
+            // Tentative de déduction si le champ file est manquant
+            $templateFile = "invitation{$id}.html";
+        }
+
         $path = resource_path("views/templates/{$templateFile}");
         
         if (!File::exists($path)) {
-            abort(404);
+            // Si toujours introuvable, on cherche par le nom du template (slugifié)
+            $slugName = \Illuminate\Support\Str::slug($template->name, '_') . '.html';
+            $path = resource_path("views/templates/{$slugName}");
+            
+            if (!File::exists($path)) {
+                abort(404, "Le fichier de template [{$templateFile}] est introuvable dans " . resource_path('views/templates'));
+            }
         }
 
         $html = File::get($path);
@@ -31,7 +70,7 @@ class TemplateBuilderController extends Controller
         return view('builder.edit', [
             'id' => $id,
             'html' => $html,
-            'templateName' => "Template {$id}"
+            'templateName' => $template->name
         ]);
     }
 

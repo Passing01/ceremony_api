@@ -37,6 +37,12 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
+        \Illuminate\Support\Facades\Log::info('EventController@store START', [
+            'user_id' => $request->user()?->id,
+            'template_id' => $request->template_id,
+            'data' => $request->all()
+        ]);
+
         $validTemplates = [1, 2, 3, 4, 5];
 
         $validated = $request->validate([

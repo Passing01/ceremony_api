@@ -4,49 +4,44 @@ namespace App\Http\Controllers;
 
 use App\Models\Template;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class TemplateController extends Controller
 {
     public function index()
     {
-        $baseUrl = rtrim(Config::get('services.templates.base_url', ''), '/');
-        $endpoint = '/'.ltrim(Config::get('services.templates.endpoint', '/api/templates'), '/');
-        $timeout = (int) Config::get('services.templates.timeout', 5);
-        $cacheTtl = (int) Config::get('services.templates.cache_ttl', 300);
+        $this->syncTemplates();
+        $templates = Template::where('is_active', true)->get();
+        return response()->json($templates);
+    }
 
-        $externalUrl = $baseUrl ? $baseUrl.$endpoint : null;
-        $cacheKey = 'templates:external:'.md5((string) $externalUrl);
+    private function syncTemplates()
+    {
+        $path = resource_path('views/templates');
+        if (!\Illuminate\Support\Facades\File::exists($path)) return;
 
-        // Try cache first when external URL configured
-        if ($externalUrl) {
-            try {
-                $data = Cache::remember($cacheKey, $cacheTtl, function () use ($externalUrl, $timeout) {
-                    $resp = Http::timeout($timeout)
-                        ->acceptJson()
-                        ->get($externalUrl);
-                    if ($resp->successful()) {
-                        return $resp->json();
-                    }
-                    throw new \RuntimeException('External templates fetch failed with status '.$resp->status());
-                });
+        $files = \Illuminate\Support\Facades\File::files($path);
+        
+        foreach ($files as $file) {
+            $filename = $file->getFilename();
+            if (!str_ends_with($filename, '.html')) continue;
 
-                if (is_array($data)) {
-                    return response()->json($data);
-                }
-            } catch (\Throwable $e) {
-                Log::warning('Templates external source unavailable, falling back to DB', [
-                    'url' => $externalUrl,
-                    'error' => $e->getMessage(),
+            // Vérifier si le template existe déjà via son fichier
+            $exists = Template::where('config_schema->file', $filename)->exists();
+
+            if (!$exists) {
+                // Créer un template par défaut à partir du nom du fichier
+                $name = ucwords(str_replace(['_', '.html'], [' ', ''], $filename));
+                Template::create([
+                    'name' => $name,
+                    'category' => 'Général',
+                    'price_per_pack' => 10.00,
+                    'is_active' => true,
+                    'config_schema' => [
+                        'type' => 'html',
+                        'file' => $filename
+                    ]
                 ]);
             }
         }
-
-        // Fallback to local DB
-        $templates = Template::where('is_active', true)->get();
-        return response()->json($templates);
     }
 }

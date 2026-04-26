@@ -163,18 +163,21 @@
 
         <div class="template-grid">
             @foreach($templates as $template)
-            <div class="template-card" onclick="window.location.href='{{ route('builder.edit', $template['id']) }}'">
-                <span class="tag">Premium</span>
+            <div class="template-card" onclick="window.location.href='{{ route('builder.edit', $template->id) }}'">
+                <span class="tag">{{ $template->category }}</span>
                 <div class="preview-container">
-                    <!-- On pourrait mettre une iframe en petit ici pour une vraie preview -->
-                    <div style="font-size: 5rem;">{{ $template['id'] == 1 ? '💌' : ($template['id'] == 2 ? '✨' : '📱') }}</div>
+                    @if($template->preview_image)
+                        <img src="{{ $template->preview_image }}" alt="{{ $template->name }}" style="width:100%; height:100%; object-fit:cover;">
+                    @else
+                        <div style="font-size: 5rem;">💌</div>
+                    @endif
                     <div class="preview-overlay">
                         <span class="btn-select">Personnaliser</span>
                     </div>
                 </div>
                 <div class="info">
-                    <h3>{{ $template['name'] }}</h3>
-                    <p>Format Story - Interactif & Élégant</p>
+                    <h3>{{ $template->name }}</h3>
+                    <p>Interactif & Élégant - {{ number_format($template->price_per_pack, 2) }}€</p>
                 </div>
             </div>
             @endforeach

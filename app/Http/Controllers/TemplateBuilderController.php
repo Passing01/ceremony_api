@@ -9,18 +9,17 @@ class TemplateBuilderController extends Controller
 {
     public function index()
     {
-        $templates = [
-            ['id' => 1, 'name' => 'Invitation Classique', 'file' => 'invitation1.html'],
-            ['id' => 2, 'name' => 'Invitation Interactive', 'file' => 'invitation2.html'],
-            ['id' => 3, 'name' => 'Story Moderne', 'file' => 'invitation3.html'],
-        ];
+        $templates = \App\Models\Template::where('is_active', true)
+            ->where('config_schema->type', 'html')
+            ->get();
 
         return view('builder.index', compact('templates'));
     }
 
     public function edit($id)
     {
-        $templateFile = "invitation{$id}.html";
+        $template = \App\Models\Template::findOrFail($id);
+        $templateFile = $template->config_schema['file'] ?? "invitation{$id}.html";
         $path = resource_path("views/templates/{$templateFile}");
         
         if (!File::exists($path)) {

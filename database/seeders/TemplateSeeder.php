@@ -78,5 +78,39 @@ class TemplateSeeder extends Seeder
                 'is_active' => true,
             ]
         );
+
+        // NOUVEAUX TEMPLATES HTML INTERACTIFS
+        Template::updateOrCreate(
+            ['name' => 'Invitation Classique'],
+            [
+                'category' => 'Mariage',
+                'price_per_pack' => 15.00,
+                'preview_image' => 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&h=400&fit=crop',
+                'config_schema' => ['type' => 'html', 'file' => 'invitation1.html'],
+                'is_active' => true,
+            ]
+        );
+
+        Template::updateOrCreate(
+            ['name' => 'Invitation Interactive'],
+            [
+                'category' => 'Mariage',
+                'price_per_pack' => 20.00,
+                'preview_image' => 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&h=400&fit=crop',
+                'config_schema' => ['type' => 'html', 'file' => 'invitation2.html'],
+                'is_active' => true,
+            ]
+        );
+
+        Template::updateOrCreate(
+            ['name' => 'Story Moderne'],
+            [
+                'category' => 'Anniversaire',
+                'price_per_pack' => 12.00,
+                'preview_image' => 'https://images.unsplash.com/photo-1530103043960-ef38714abb15?w=600&h=400&fit=crop',
+                'config_schema' => ['type' => 'html', 'file' => 'invitation3.html'],
+                'is_active' => true,
+            ]
+        );
     }
 }

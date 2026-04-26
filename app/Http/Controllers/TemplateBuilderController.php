@@ -179,13 +179,28 @@ class TemplateBuilderController extends Controller
         $dataArray = [];
         foreach ($sections as $section) {
             $sectionId = $section['id'];
-            if (!isset($customData[$sectionId])) continue;
-
+            
             $defaults = [];
             foreach ($section['fields'] ?? [] as $field) {
                 $defaults[$field['id']] = $field['default'] ?? '';
             }
-            $dataArray[] = array_merge($defaults, $customData[$sectionId]);
+
+            if (isset($customData[$sectionId])) {
+                $dataArray[] = array_merge($defaults, $customData[$sectionId]);
+            } else {
+                // Fallback intelligent pour les sections manquantes (remplissage auto pour JS templates)
+                $fallbackData = $defaults;
+                if ($sectionId === 'intro' || $sectionId === 'hero' || $sectionId === 'ch1') {
+                    if (isset($customData['company_name'])) $fallbackData['names'] = $customData['company_name'];
+                    if (isset($customData['company_name'])) $fallbackData['title'] = $customData['company_name'];
+                    if (isset($customData['company_logo'])) $fallbackData['media'] = $customData['company_logo'];
+                    if (isset($customData['company_logo'])) $fallbackData['mediaSrc'] = $customData['company_logo'];
+                    if (isset($customData['agenda'])) $fallbackData['story'] = $customData['agenda'];
+                    if (isset($customData['event_purpose'])) $fallbackData['badge'] = $customData['event_purpose'];
+                    $dataArray[] = $fallbackData;
+                }
+                // Ne pas ajouter les autres sections si on n'a rien, pour éviter des slides vides inutiles
+            }
         }
 
         // ============================================================
@@ -202,16 +217,40 @@ class TemplateBuilderController extends Controller
         $html = preg_replace('/new Date\([\'"].*?[\'"]\)/', "new Date('{$weddingDate}')", $html);
 
         // ============================================================
-        // 3. Préparation des données globales
+        // 3. Préparation des données globales et Mapping de secours (Fallback)
+        //    Si les données ne correspondent pas au format template (ex: corporate data),
+        //    on les mappe manuellement sur les champs connus.
         // ============================================================
+        $raw = $customData;
+        $mappedIntro = $raw['intro'] ?? $raw['envelope'] ?? [];
+        $mappedDetails = $raw['event_details'] ?? [];
+        $mappedHero = $raw['hero'] ?? $raw['intro'] ?? [];
+
+        // Fallback pour les données d'entreprise / corporate
+        if (empty($mappedIntro) && isset($raw['company_name'])) {
+            $mappedIntro['names'] = $raw['company_name'];
+            $mappedIntro['front_text'] = $raw['company_name'];
+            if (isset($raw['event_purpose'])) $mappedIntro['subtitle'] = $raw['event_purpose'];
+        }
+        if (empty($mappedDetails) && isset($raw['agenda'])) {
+            $mappedDetails['text'] = $raw['agenda'];
+            $mappedDetails['story'] = $raw['agenda'];
+            if (isset($raw['dress_code'])) $mappedDetails['quote'] = "Dress code : " . $raw['dress_code'];
+            if (isset($event->event_date)) $mappedDetails['date'] = $event->event_date->format('d/m/Y H:i');
+        }
+        if (empty($mappedHero) && isset($raw['company_logo'])) {
+            $mappedHero['media'] = $raw['company_logo'];
+            $mappedHero['mediaSrc'] = $raw['company_logo'];
+        }
+
         $domReplacements = json_encode([
-            'hero'          => $customData['hero'] ?? $customData['intro'] ?? [],
-            'intro'         => $customData['intro'] ?? $customData['envelope'] ?? [],
-            'envelope'      => $customData['envelope'] ?? [],
-            'event_details' => $customData['event_details'] ?? [],
-            'location_civile' => $customData['location_civile'] ?? [],
-            'location_reception' => $customData['location_reception'] ?? [],
-            'dresscode'     => $customData['dresscode'] ?? [],
+            'hero'          => $mappedHero,
+            'intro'         => $mappedIntro,
+            'envelope'      => $mappedIntro,
+            'event_details' => $mappedDetails,
+            'location_civile' => $raw['location_civile'] ?? [],
+            'location_reception' => $raw['location_reception'] ?? [],
+            'dresscode'     => $raw['dresscode'] ?? [],
         ], JSON_UNESCAPED_UNICODE);
 
         // ============================================================

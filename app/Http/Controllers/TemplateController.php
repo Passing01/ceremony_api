@@ -24,40 +24,26 @@ class TemplateController extends Controller
         
         foreach ($files as $file) {
             $filename = $file->getFilename();
-            if (!str_ends_with($filename, '.html')) continue;
-
-            $baseName = str_replace('.html', '', $filename);
-            $jsonPath = $path . '/' . $baseName . '.json';
-            
-            // Paramètres par défaut
-            $metadata = [
-                'name' => ucwords(str_replace('_', ' ', $baseName)),
-                'category' => 'Général',
-                'price_per_pack' => 10.00,
-                'sections' => []
-            ];
-
-            // Charger les métadonnées si le fichier JSON existe
-            if (File::exists($jsonPath)) {
-                $jsonContent = json_decode(File::get($jsonPath), true);
-                $metadata = array_merge($metadata, $jsonContent);
-            }
-
-            // Mettre à jour ou créer en base de données
-            \App\Models\Template::updateOrCreate(
-                ['config_schema->file' => $filename],
-                [
-                    'name' => $metadata['name'],
-                    'category' => $metadata['category'],
-                    'price_per_pack' => $metadata['price_per_pack'],
+            if ($file->getExtension() === 'json') {
+                $config = json_decode(File::get($file), true);
+                $htmlFile = str_replace('.json', '.html', $file->getFilename());
+                
+                $id = $mapping[$file->getFilename()] ?? null;
+                
+                $templateData = [
+                    'name' => $config['name'] ?? 'Template Sans Nom',
+                    'category' => $config['category'] ?? 'Général',
+                    'price_per_pack' => $config['price_per_pack'] ?? 0,
+                    'config_schema' => array_merge($config, ['file' => $htmlFile]),
                     'is_active' => true,
-                    'config_schema' => [
-                        'type' => 'html',
-                        'file' => $filename,
-                        'sections' => $metadata['sections']
-                    ]
-                ]
-            );
+                ];
+
+                if ($id) {
+                    \App\Models\Template::updateOrCreate(['id' => $id], $templateData);
+                } else {
+                    \App\Models\Template::updateOrCreate(['name' => $templateData['name']], $templateData);
+                }
+            }
         }
     }
 }

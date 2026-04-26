@@ -5,6 +5,9 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
+// DEBUG LOG
+file_put_contents(__DIR__.'/../storage/logs/laravel.log', "[".date('Y-m-d H:i:s')."] GLOBAL HIT: ".$_SERVER['REQUEST_URI']."\n", FILE_APPEND);
+
 // Determine if the application is in maintenance mode...
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
     require $maintenance;

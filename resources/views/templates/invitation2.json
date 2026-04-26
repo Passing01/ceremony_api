@@ -1,0 +1,58 @@
+{
+    "name": "Invitation Interactive",
+    "category": "Mariage",
+    "price_per_pack": 20.00,
+    "sections": [
+        {
+            "id": "intro",
+            "label": "Introduction",
+            "fields": [
+                {"id": "title", "label": "Titre", "type": "text", "placeholder": "Wedding Day"},
+                {"id": "groom", "label": "Marié", "type": "text", "placeholder": "Jean"},
+                {"id": "bride", "label": "Mariée", "type": "text", "placeholder": "Marie"}
+            ]
+        },
+        {
+            "id": "ch1",
+            "label": "Chapitre 1",
+            "fields": [
+                {"id": "badge", "label": "Badge", "type": "text", "placeholder": "NOTRE RENCONTRE"},
+                {"id": "title", "label": "Titre", "type": "text", "placeholder": "Le premier regard"},
+                {"id": "story", "label": "Histoire", "type": "textarea"},
+                {"id": "date", "label": "Date/Lieu", "type": "text"},
+                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media"}
+            ]
+        },
+        {
+            "id": "ch2",
+            "label": "Chapitre 2",
+            "fields": [
+                {"id": "badge", "label": "Badge", "type": "text"},
+                {"id": "title", "label": "Titre", "type": "text"},
+                {"id": "story", "label": "Histoire", "type": "textarea"},
+                {"id": "date", "label": "Date/Lieu", "type": "text"},
+                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media"}
+            ]
+        },
+        {
+            "id": "ch3",
+            "label": "Chapitre 3",
+            "fields": [
+                {"id": "badge", "label": "Badge", "type": "text"},
+                {"id": "title", "label": "Titre", "type": "text"},
+                {"id": "story", "label": "Histoire", "type": "textarea"},
+                {"id": "date", "label": "Date/Lieu", "type": "text"},
+                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media"}
+            ]
+        },
+        {
+            "id": "event",
+            "label": "Détails de l'événement",
+            "fields": [
+                {"id": "title", "label": "Titre", "type": "text", "placeholder": "La Cérémonie"},
+                {"id": "date", "label": "Date", "type": "text"},
+                {"id": "location", "label": "Lieu", "type": "text"}
+            ]
+        }
+    ]
+}

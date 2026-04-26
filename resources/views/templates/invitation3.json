@@ -1,0 +1,37 @@
+{
+    "name": "Story Moderne",
+    "category": "Anniversaire",
+    "price_per_pack": 12.00,
+    "sections": [
+        {
+            "id": "slide1",
+            "label": "Slide 1 - Accueil",
+            "fields": [
+                {"id": "badge", "label": "Petit Titre", "type": "text", "placeholder": "SAVE THE DATE"},
+                {"id": "title", "label": "Titre Principal", "type": "text", "placeholder": "MES 20 ANS"},
+                {"id": "mediaSrc", "label": "Photo de fond", "type": "media"}
+            ]
+        },
+        {
+            "id": "slide2",
+            "label": "Slide 2 - Message",
+            "fields": [
+                {"id": "badge", "label": "Badge", "type": "text", "placeholder": "L'HISTOIRE"},
+                {"id": "title", "label": "Titre", "type": "text", "placeholder": "Déjà 20 ans"},
+                {"id": "story", "label": "Votre message", "type": "textarea"},
+                {"id": "mediaSrc", "label": "Photo/Vidéo", "type": "media"}
+            ]
+        },
+        {
+            "id": "slide3",
+            "label": "Slide 3 - Infos",
+            "fields": [
+                {"id": "badge", "label": "Badge", "type": "text", "placeholder": "INFOS"},
+                {"id": "title", "label": "Titre", "type": "text", "placeholder": "C'est quand ?"},
+                {"id": "date", "label": "Date et Heure", "type": "text"},
+                {"id": "location", "label": "Lieu", "type": "text"},
+                {"id": "mediaSrc", "label": "Photo décorative", "type": "media"}
+            ]
+        }
+    ]
+}

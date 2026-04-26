@@ -85,3 +85,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Public Guest Routes
 Route::patch('/rsvp/{token}', [GuestController::class, 'rsvp']);
+
+// Preview de template (utilisé par Flutter pour le formulaire natif)
+Route::post('/public/templates/preview', [\App\Http\Controllers\PreviewController::class, 'show']);

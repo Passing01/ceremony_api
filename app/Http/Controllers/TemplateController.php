@@ -17,31 +17,46 @@ class TemplateController extends Controller
     private function syncTemplates()
     {
         $path = resource_path('views/templates');
-        if (!\Illuminate\Support\Facades\File::exists($path)) return;
+        if (!File::exists($path)) return;
 
-        $files = \Illuminate\Support\Facades\File::files($path);
+        $files = File::files($path);
         
         foreach ($files as $file) {
             $filename = $file->getFilename();
             if (!str_ends_with($filename, '.html')) continue;
 
-            // Vérifier si le template existe déjà via son fichier
-            $exists = Template::where('config_schema->file', $filename)->exists();
+            $baseName = str_replace('.html', '', $filename);
+            $jsonPath = $path . '/' . $baseName . '.json';
+            
+            // Paramètres par défaut
+            $metadata = [
+                'name' => ucwords(str_replace('_', ' ', $baseName)),
+                'category' => 'Général',
+                'price_per_pack' => 10.00,
+                'sections' => []
+            ];
 
-            if (!$exists) {
-                // Créer un template par défaut à partir du nom du fichier
-                $name = ucwords(str_replace(['_', '.html'], [' ', ''], $filename));
-                Template::create([
-                    'name' => $name,
-                    'category' => 'Général',
-                    'price_per_pack' => 10.00,
+            // Charger les métadonnées si le fichier JSON existe
+            if (File::exists($jsonPath)) {
+                $jsonContent = json_decode(File::get($jsonPath), true);
+                $metadata = array_merge($metadata, $jsonContent);
+            }
+
+            // Mettre à jour ou créer en base de données
+            \App\Models\Template::updateOrCreate(
+                ['config_schema->file' => $filename],
+                [
+                    'name' => $metadata['name'],
+                    'category' => $metadata['category'],
+                    'price_per_pack' => $metadata['price_per_pack'],
                     'is_active' => true,
                     'config_schema' => [
                         'type' => 'html',
-                        'file' => $filename
+                        'file' => $filename,
+                        'sections' => $metadata['sections']
                     ]
-                ]);
-            }
+                ]
+            );
         }
     }
 }

@@ -176,6 +176,17 @@ class TemplateBuilderController extends Controller
         // ============================================================
         // 1. Construire le tableau JS ordonné à partir des sections
         // ============================================================
+        $prefixStorage = function ($array) use (&$prefixStorage) {
+            foreach ($array as $key => $value) {
+                if (is_string($value) && (str_starts_with($value, 'events/media') || str_starts_with($value, 'events/photos'))) {
+                    $array[$key] = url('storage/' . $value);
+                } elseif (is_array($value)) {
+                    $array[$key] = $prefixStorage($value);
+                }
+            }
+            return $array;
+        };
+
         $dataArray = [];
         foreach ($sections as $section) {
             $sectionId = $section['id'];
@@ -186,20 +197,19 @@ class TemplateBuilderController extends Controller
             }
 
             if (isset($customData[$sectionId])) {
-                $dataArray[] = array_merge($defaults, $customData[$sectionId]);
+                $dataArray[] = $prefixStorage(array_merge($defaults, $customData[$sectionId]));
             } else {
-                // Fallback intelligent pour les sections manquantes (remplissage auto pour JS templates)
+                // Fallback intelligent
                 $fallbackData = $defaults;
                 if ($sectionId === 'intro' || $sectionId === 'hero' || $sectionId === 'ch1') {
                     if (isset($customData['company_name'])) $fallbackData['names'] = $customData['company_name'];
                     if (isset($customData['company_name'])) $fallbackData['title'] = $customData['company_name'];
-                    if (isset($customData['company_logo'])) $fallbackData['media'] = $customData['company_logo'];
-                    if (isset($customData['company_logo'])) $fallbackData['mediaSrc'] = $customData['company_logo'];
+                    if (isset($customData['company_logo'])) $fallbackData['media'] = url('storage/' . $customData['company_logo']);
+                    if (isset($customData['company_logo'])) $fallbackData['mediaSrc'] = url('storage/' . $customData['company_logo']);
                     if (isset($customData['agenda'])) $fallbackData['story'] = $customData['agenda'];
                     if (isset($customData['event_purpose'])) $fallbackData['badge'] = $customData['event_purpose'];
                     $dataArray[] = $fallbackData;
                 }
-                // Ne pas ajouter les autres sections si on n'a rien, pour éviter des slides vides inutiles
             }
         }
 
@@ -244,13 +254,13 @@ class TemplateBuilderController extends Controller
         }
 
         $domReplacements = json_encode([
-            'hero'          => $mappedHero,
-            'intro'         => $mappedIntro,
-            'envelope'      => $mappedIntro,
-            'event_details' => $mappedDetails,
-            'location_civile' => $raw['location_civile'] ?? [],
-            'location_reception' => $raw['location_reception'] ?? [],
-            'dresscode'     => $raw['dresscode'] ?? [],
+            'hero'          => $prefixStorage($mappedHero),
+            'intro'         => $prefixStorage($mappedIntro),
+            'envelope'      => $prefixStorage($mappedIntro),
+            'event_details' => $prefixStorage($mappedDetails),
+            'location_civile' => $prefixStorage($raw['location_civile'] ?? []),
+            'location_reception' => $prefixStorage($raw['location_reception'] ?? []),
+            'dresscode'     => $prefixStorage($raw['dresscode'] ?? []),
         ], JSON_UNESCAPED_UNICODE);
 
         // ============================================================
@@ -281,6 +291,11 @@ class TemplateBuilderController extends Controller
                     if (!mediaUrl) return;
                     var container = document.querySelector(containerSelector);
                     if (!container) return;
+                    
+                    // Convert relative storage path to full URL
+                    if (mediaUrl.indexOf('http') !== 0) {
+                        mediaUrl = '/storage/' + mediaUrl;
+                    }
                     
                     var isVideo = /\.(mp4|webm|mov|ogg)/i.test(mediaUrl);
                     if (isVideo) {

@@ -96,9 +96,27 @@ class EventController extends Controller
                 // Merge data
                 $customData = $request->input('custom_data', []);
                 if (is_string($customData)) $customData = json_decode($customData, true) ?? [];
+                // Recursive function to handle nested file uploads in the 'data' array
+                $processNestedFiles = function ($array, $prefix = '') use (&$processNestedFiles, $request) {
+                    foreach ($array as $key => $value) {
+                        $fullKey = $prefix ? "{$prefix}[{$key}]" : $key;
+                        
+                        if ($request->hasFile($fullKey)) {
+                            $path = $request->file($fullKey)->store('events/media', 'public');
+                            $array[$key] = $path;
+                        } elseif (is_array($value)) {
+                            $array[$key] = $processNestedFiles($value, $fullKey);
+                        }
+                    }
+                    return $array;
+                };
+
+                // Parse data and handle nested files
                 $data = $request->input('data', []);
                 if (is_string($data)) $data = json_decode($data, true) ?? [];
+                $data = $processNestedFiles($data, 'data');
                 
+                // Merge everything into custom_data
                 $custom = array_merge($customData, $data, $imageFields);
 
                 // Handle cover_image upload
@@ -192,15 +210,26 @@ class EventController extends Controller
         }
 
         return DB::transaction(function () use ($request, $event, $validated) {
-            // Get event type configuration (use existing or new)
+            // Recursive function to handle nested file uploads
+            $processNestedFiles = function ($array, $prefix = '') use (&$processNestedFiles, $request) {
+                foreach ($array as $key => $value) {
+                    $fullKey = $prefix ? "{$prefix}[{$key}]" : $key;
+                    if ($request->hasFile($fullKey)) {
+                        $path = $request->file($fullKey)->store('events/media', 'public');
+                        $array[$key] = $path;
+                    } elseif (is_array($value)) {
+                        $array[$key] = $processNestedFiles($value, $fullKey);
+                    }
+                }
+                return $array;
+            };
+
+            // Get event type configuration
             $eventType = $request->input('event_type', $event->event_type);
             $eventTypes = config('event_types');
             $eventTypeConfig = $eventTypes[$eventType] ?? null;
 
-            // Start with existing custom_data
-            $customExisting = $event->custom_data ?? [];
-
-            // Handle dynamic image fields based on event type
+            // Handle root image fields from config
             $imageFields = [];
             if ($eventTypeConfig) {
                 foreach ($eventTypeConfig['fields'] as $field) {
@@ -211,50 +240,26 @@ class EventController extends Controller
                 }
             }
 
-            // Merge custom data (support data[] format from Flutter)
+            // Merge custom data (including nested files from 'data')
             $dataFlutter = $request->input('data', []);
             if (is_string($dataFlutter)) $dataFlutter = json_decode($dataFlutter, true) ?? [];
+            $dataFlutter = $processNestedFiles($dataFlutter, 'data');
 
             $customMerged = array_merge(
-                $customExisting,
+                $event->custom_data ?? [],
                 $request->input('custom_data', []),
                 $request->input('custom_fields', []),
                 $dataFlutter,
                 $imageFields
             );
 
-            // Add any non-image fields from the request
-            if ($eventTypeConfig) {
-                foreach ($eventTypeConfig['fields'] as $field) {
-                    if ($field['type'] !== 'image' && $request->has($field['name'])) {
-                        $customMerged[$field['name']] = $request->input($field['name']);
-                    }
-                }
-            }
-
-            // Compute location payload
-            $locations = $request->input('locations');
-            $locationPayload = $locations ?? $request->input('location');
-
-            // Apply scalar updates if present
-            if (array_key_exists('template_id', $validated)) {
-                $event->template_id = (int) $validated['template_id'];
-            }
-            if (array_key_exists('event_type', $validated)) {
-                $event->event_type = $validated['event_type'];
-            }
-            if (array_key_exists('title', $validated)) {
-                $event->title = $validated['title'];
-            }
-            if (array_key_exists('event_date', $validated)) {
-                $event->event_date = $validated['event_date'];
-            }
-            if (array_key_exists('invitation_text', $validated)) {
-                $event->invitation_text = $validated['invitation_text'];
-            }
-            if (!is_null($locationPayload) || array_key_exists('location', $validated) || array_key_exists('locations', $validated)) {
-                $event->location = $locationPayload;
-            }
+            // Apply scalar updates
+            if ($request->has('template_id')) $event->template_id = (int) $request->template_id;
+            if ($request->has('event_type')) $event->event_type = $request->event_type;
+            if ($request->has('title')) $event->title = $request->title;
+            if ($request->has('event_date')) $event->event_date = $request->event_date;
+            if ($request->has('invitation_text')) $event->invitation_text = $request->invitation_text;
+            if ($request->has('location')) $event->location = $request->location;
 
             // cover_image update
             if ($request->hasFile('cover_image')) {

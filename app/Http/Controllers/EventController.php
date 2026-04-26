@@ -37,6 +37,8 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
+        return response()->json(['debug' => 'reached_controller'], 200);
+        
         \Illuminate\Support\Facades\Log::info('EventController@store hit', [
             'user_id' => $request->user()?->id,
             'template_id' => $request->template_id,

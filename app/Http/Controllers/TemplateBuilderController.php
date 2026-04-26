@@ -228,29 +228,30 @@ class TemplateBuilderController extends Controller
 
         // ============================================================
         // 3. Préparation des données globales et Mapping de secours (Fallback)
-        //    Si les données ne correspondent pas au format template (ex: corporate data),
-        //    on les mappe manuellement sur les champs connus.
         // ============================================================
         $raw = $customData;
         $mappedIntro = $raw['intro'] ?? $raw['envelope'] ?? [];
         $mappedDetails = $raw['event_details'] ?? [];
         $mappedHero = $raw['hero'] ?? $raw['intro'] ?? [];
 
+        // Utiliser les champs globaux de l'event comme fallback prioritaire
+        if (empty($mappedDetails['text']) && $event->invitation_text) {
+            $mappedDetails['text'] = $event->invitation_text;
+        }
+        if (empty($mappedIntro['names']) && $event->title) {
+            $mappedIntro['names'] = $event->title;
+        }
+
         // Fallback pour les données d'entreprise / corporate
-        if (empty($mappedIntro) && isset($raw['company_name'])) {
+        if (empty($mappedIntro['names']) && isset($raw['company_name'])) {
             $mappedIntro['names'] = $raw['company_name'];
             $mappedIntro['front_text'] = $raw['company_name'];
             if (isset($raw['event_purpose'])) $mappedIntro['subtitle'] = $raw['event_purpose'];
         }
-        if (empty($mappedDetails) && isset($raw['agenda'])) {
+        if (empty($mappedDetails['text']) && isset($raw['agenda'])) {
             $mappedDetails['text'] = $raw['agenda'];
             $mappedDetails['story'] = $raw['agenda'];
             if (isset($raw['dress_code'])) $mappedDetails['quote'] = "Dress code : " . $raw['dress_code'];
-            if (isset($event->event_date)) $mappedDetails['date'] = $event->event_date->format('d/m/Y H:i');
-        }
-        if (empty($mappedHero) && isset($raw['company_logo'])) {
-            $mappedHero['media'] = $raw['company_logo'];
-            $mappedHero['mediaSrc'] = $raw['company_logo'];
         }
 
         $domReplacements = json_encode([
@@ -266,9 +267,11 @@ class TemplateBuilderController extends Controller
         // ============================================================
         // 4. Injection du token RSVP + données globales dans <head>
         // ============================================================
+        $baseUrl = url('/');
         $headScript = "<script>
             window.guestToken = '{$token}';
             window.eventData  = {$domReplacements};
+            window.apiBaseUrl = '{$baseUrl}';
         </script>";
         $html = preg_replace('/<head([^>]*)>/i', '<head$1>' . $headScript, $html, 1);
 
@@ -333,20 +336,53 @@ class TemplateBuilderController extends Controller
                 setText('.save-date-date, .date-time', d.event_details.date);
                 setText('.lieu-nom', d.event_details.location);
                 
+                // Formulaire RSVP Fonctionnel
+                var rsvpForm = document.getElementById('rsvpForm');
+                if (rsvpForm) {
+                    rsvpForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        var btn = rsvpForm.querySelector('button[type=\"submit\"]');
+                        if (btn) btn.disabled = true;
+
+                        var data = {
+                            rsvp: document.getElementById('rsvpPresence')?.value || 'confirmed',
+                            message: document.getElementById('rsvpMessage')?.value || '',
+                            companion_count: document.getElementById('rsvpAccompagnants')?.value || 0
+                        };
+
+                        fetch((window.apiBaseUrl || '') + '/api/guests/' + window.guestToken + '/rsvp', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                            body: JSON.stringify(data)
+                        })
+                        .then(function(res) { return res.json(); })
+                        .then(function(res) {
+                            rsvpForm.style.display = 'none';
+                            var merci = document.getElementById('rsvpMerci');
+                            if (merci) merci.style.display = 'block';
+                            else alert('Merci ! Votre réponse a été enregistrée.');
+                        })
+                        .catch(function(err) {
+                            console.error(err);
+                            if (btn) btn.disabled = false;
+                            alert('Une erreur est survenue, veuillez réessayer.');
+                        });
+                    });
+                }
+
                 // Détails spécifiques (Template 5)
                 var civ = d.location_civile || {};
                 var rec = d.location_reception || {};
-                var elCiv = document.querySelectorAll('.card-lieu')[0];
-                if(elCiv && civ.name) {
-                    elCiv.querySelector('.lieu-nom').textContent = civ.name;
-                    elCiv.querySelector('.lieu-adresse').textContent = civ.address;
-                    elCiv.querySelector('.lieu-type').textContent = civ.title;
+                var allCards = document.querySelectorAll('.card-lieu');
+                if(allCards[0] && civ.name) {
+                    allCards[0].querySelector('.lieu-nom').textContent = civ.name;
+                    allCards[0].querySelector('.lieu-adresse').textContent = civ.address || '';
+                    if(civ.title) allCards[0].querySelector('.lieu-type').textContent = civ.title;
                 }
-                var elRec = document.querySelectorAll('.card-lieu')[1];
-                if(elRec && rec.name) {
-                    elRec.querySelector('.lieu-nom').textContent = rec.name;
-                    elRec.querySelector('.lieu-adresse').textContent = rec.address;
-                    elRec.querySelector('.lieu-type').textContent = rec.title;
+                if(allCards[1] && rec.name) {
+                    allCards[1].querySelector('.lieu-nom').textContent = rec.name;
+                    allCards[1].querySelector('.lieu-adresse').textContent = rec.address || '';
+                    if(rec.title) allCards[1].querySelector('.lieu-type').textContent = rec.title;
                 }
             });
         </script>";

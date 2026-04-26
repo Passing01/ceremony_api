@@ -11,11 +11,14 @@
     .envelope-wrapper { position: relative; width: 100%; max-width: 500px; perspective: 1200px; }
     .envelope { position: relative; width: 100%; height: 650px; background: #f5f0e8; border-radius: 8px; box-shadow: 0 30px 60px rgba(0,0,0,0.12); overflow: hidden; cursor: pointer; transition: transform 0.5s ease; transform-style: preserve-3d; }
     .envelope.opened { transform: rotateY(0deg); pointer-events: none; }
-    .envelope-flap { position: absolute; top: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(180deg, #ede4d3 0%, #f2ecdd 100%); clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: top center; transition: transform 1.2s cubic-bezier(0.68, -0.15, 0.27, 1.15); z-index: 10; }
+    .envelope-flap { position: absolute; top: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(180deg, #ede4d3 0%, #f2ecdd 100%); clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: top center; transition: transform 1.2s cubic-bezier(0.68, -0.15, 0.27, 1.15); z-index: 10; border-bottom: 1px solid rgba(180,150,100,0.3); }
     .envelope.opened .envelope-flap { transform: rotateX(180deg); }
     .envelope-seal { position: absolute; top: 38%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 70px; background: radial-gradient(circle, #d4af37 0%, #b5942c 100%); border-radius: 50%; z-index: 11; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; box-shadow: 0 8px 20px rgba(180,150,30,0.5); transition: all 0.6s ease; }
     .envelope.opened .envelope-seal { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-    .envelope-front-text { position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%); text-align: center; color: #8b7a5e; z-index: 5; font-size: 1.2rem; letter-spacing: 2px; }
+    .envelope-front-text { position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%); text-align: center; color: #8b7a5e; z-index: 5; font-size: 1.2rem; letter-spacing: 2px; transition: opacity 0.5s; }
+    .envelope.opened .envelope-front-text { opacity: 0; }
+    .open-hint { position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); color: #b59d5e; font-size: 0.9rem; z-index: 6; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
     .inner-content { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease 0.4s; pointer-events: none; background: white; z-index: 2; display: flex; flex-direction: column; }
     .envelope.opened .inner-content { opacity: 1; pointer-events: auto; }
     .progress-container { display: flex; gap: 5px; padding: 12px 20px; background: rgba(255,255,255,0.95); border-bottom: 1px solid #f0ebe0; flex-shrink: 0; }
@@ -30,7 +33,7 @@
     .chapter h2 { font-size: 2.2rem; margin-bottom: 15px; color: #3a3a3a; font-weight: 400; }
     .chapter .text { font-size: 1.15rem; line-height: 1.6; color: #555; margin-bottom: 20px; }
     .chapter .date { font-size: 0.95rem; color: #b59d5e; margin-bottom: 20px; font-family: 'Montserrat', sans-serif; letter-spacing: 1px; }
-    .media-container { width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); background: #fdfcf8; }
+    .media-container { width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.08); background: #fdfcf8; margin-top: 10px; }
     .media-container img, .media-container video { width: 100%; display: block; object-fit: cover; max-height: 250px; }
     .indicators { display: flex; gap: 8px; padding: 15px; justify-content: center; }
     .dot { width: 6px; height: 6px; background: #e5e0d5; border-radius: 50%; transition: all 0.3s; }
@@ -38,40 +41,51 @@
     .nav-buttons { display: flex; justify-content: center; gap: 20px; padding-bottom: 20px; }
     .nav-btn { background: none; border: 1px solid #e0d8c8; color: #8b7a5e; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: all 0.3s; }
     .rsvp-form { width: 100%; max-width: 350px; display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
-    .rsvp-form select, .rsvp-form input, .rsvp-form textarea { padding: 10px; border: 1px solid #e0d8c8; border-radius: 6px; font-family: inherit; font-size: 1rem; }
-    .rsvp-form button { background: #d4af37; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 1rem; }
-    .confirmation-message { display: none; color: #2d6a4f; margin-top: 15px; }
+    .rsvp-form select, .rsvp-form input, .rsvp-form textarea { padding: 12px; border: 1px solid #e0d8c8; border-radius: 6px; font-family: inherit; font-size: 1rem; background: #fdfcf8; }
+    .rsvp-form button { background: #d4af37; color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-size: 1rem; letter-spacing: 1px; transition: background 0.3s; }
+    .rsvp-form button:hover { background: #c09c2e; }
+    .confirmation-message { display: none; color: #2d6a4f; margin-top: 15px; font-size: 1.1rem; line-height: 1.4; }
   </style>
 </head>
 <body>
 <div class="envelope-wrapper">
   <div class="envelope" id="envelope">
     <div class="envelope-flap"></div>
-    <div class="envelope-seal">💌</div>
-    <div class="envelope-front-text">Invitation</div>
+    <div class="envelope-seal" id="envelopeSeal">💌</div>
+    <div class="envelope-front-text" id="envelopeText">Invitation</div>
+    <div class="open-hint">✉️ Touchez pour ouvrir</div>
+    
     <div class="inner-content" id="innerContent">
       <div class="progress-container" id="progressContainer"></div>
       <div class="story-container" id="storyContainer"></div>
+      
+      <!-- SECTION FINALE -->
       <div class="story-container" id="detailsSection" style="display:none;">
           <div class="chapter active">
             <div class="chapter-number">CÉLÉBRATION</div>
             <h2 id="finalTitle">Chargement...</h2>
             <p id="finalText" class="text"></p>
             <div id="finalDate" class="date"></div>
-            <div id="finalLocation" style="color:#d4af37; font-weight:bold;"></div>
+            <div id="finalLocation" style="color:#d4af37; font-weight:bold; margin-bottom:15px;"></div>
+            
             <form class="rsvp-form" id="rsvpForm">
+              <input type="text" id="rsvpNom" placeholder="Votre nom" required>
+              <input type="email" id="rsvpEmail" placeholder="Votre email" required>
               <select id="rsvpPresence" required>
                 <option value="">Serez-vous présent(e) ?</option>
                 <option value="confirmed">Avec joie !</option>
                 <option value="declined">Malheureusement...</option>
               </select>
-              <input type="number" id="rsvpAccompagnants" placeholder="Accompagnants" min="0">
-              <textarea id="rsvpMessage" placeholder="Un petit mot..." rows="2"></textarea>
+              <input type="number" id="rsvpAccompagnants" placeholder="Nombre d'accompagnants" min="0" max="10">
+              <textarea id="rsvpMessage" placeholder="Un petit mot pour nous..." rows="2"></textarea>
               <button type="submit">Confirmer ✨</button>
             </form>
-            <div class="confirmation-message" id="rsvpMerci">✅ Merci ! Votre réponse a été enregistrée.</div>
+            <div class="confirmation-message" id="rsvpMerci">
+              ✅ Merci ! Votre réponse a bien été enregistrée.<br>À très vite !
+            </div>
           </div>
       </div>
+
       <div class="indicators" id="indicators"></div>
       <div class="nav-buttons">
         <button class="nav-btn" id="prevBtn">←</button>
@@ -84,11 +98,14 @@
 
 <script>
   (function() {
-    // Les chapitres seront injectés ici par le serveur
-    const chaptersData = [
-      { number: "Chapitre I", title: "Le premier regard", text: "C'était un soir d'automne...", date: "Paris, 2020", media: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600" },
-      { number: "CÉLÉBRATION", title: "Notre Mariage", text: "Nous vous attendons !", date: "14 Juin 2026", location: "Château de Vaux", isFinal: true }
-    ];
+    // Les chapitres seront injectés ici par le serveur (const chaptersData = [...];)
+    // Fallback par défaut si l'injection échoue
+    if (typeof chaptersData === 'undefined') {
+        window.chaptersData = [
+          { number: "Chapitre I", title: "Le premier regard", text: "C'était un soir d'automne...", date: "Paris, 2020", media: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600" },
+          { number: "CÉLÉBRATION", title: "Notre Mariage", text: "Nous vous attendons !", date: "14 Juin 2026", location: "Château de Vaux", isFinal: true }
+        ];
+    }
 
     const storyContainer = document.getElementById('storyContainer');
     const detailsSection = document.getElementById('detailsSection');
@@ -98,24 +115,47 @@
     const storyChapters = chaptersData.filter(c => !c.isFinal);
     const finalSection = chaptersData.find(c => c.isFinal) || storyChapters[storyChapters.length-1];
 
+    // Génération des chapitres
     storyChapters.forEach((data, i) => {
       const div = document.createElement('div');
       div.className = 'chapter' + (i === 0 ? ' active' : '');
-      let mediaHtml = data.media ? (/\.(mp4|webm|mov|ogg)/i.test(data.media) ? 
-        `<div class="media-container"><video src="${data.media}" autoplay muted loop playsinline></video></div>` : 
-        `<div class="media-container"><img src="${data.media}"></div>`) : '';
-      div.innerHTML = `<div class="chapter-number">${data.number || 'Chapitre '+(i+1)}</div><h2>${data.title}</h2><p class="text">${data.text}</p><div class="date">${data.date||''}</div>${mediaHtml}`;
+      
+      let mediaHtml = '';
+      if (data.media) {
+          const isVideo = /\.(mp4|webm|mov|ogg)/i.test(data.media);
+          if (isVideo) {
+            mediaHtml = `<div class="media-container"><video src="${data.media}" autoplay muted loop playsinline></video></div>`;
+          } else {
+            mediaHtml = `<div class="media-container"><img src="${data.media}" onerror="this.parentElement.style.display='none'"></div>`;
+          }
+      }
+
+      div.innerHTML = `
+        <div class="chapter-number">${data.number || ('Chapitre ' + (i+1))}</div>
+        <h2>${data.title}</h2>
+        <p class="text">${data.text}</p>
+        <div class="date">${data.date || ''}</div>
+        ${mediaHtml}
+      `;
       storyContainer.appendChild(div);
 
       const seg = document.createElement('div'); seg.className = 'progress-segment' + (i===0?' current':''); progressContainer.appendChild(seg);
       const dot = document.createElement('span'); dot.className = 'dot' + (i===0?' active':''); indicatorsContainer.appendChild(dot);
     });
 
+    // Remplissage section finale
     if(finalSection){
       document.getElementById('finalTitle').textContent = finalSection.title;
       document.getElementById('finalText').textContent = finalSection.text;
       document.getElementById('finalDate').textContent = finalSection.date;
       document.getElementById('finalLocation').textContent = finalSection.location || '';
+    }
+
+    // Personnalisation Enveloppe
+    if (window.eventData && window.eventData.envelope) {
+        const env = window.eventData.envelope;
+        if (env.front_text) document.getElementById('envelopeText').textContent = env.front_text;
+        if (env.seal) document.getElementById('envelopeSeal').textContent = env.seal;
     }
 
     const envelope = document.getElementById('envelope');
@@ -125,21 +165,36 @@
     let currentIndex = 0, isPlaying = false, progressAnimationId = null;
     const CHAPTER_DURATION = 5000;
 
-    envelope.addEventListener('click', () => { if(!envelope.classList.contains('opened')){ envelope.classList.add('opened'); setTimeout(()=>showChapter(0), 1000); isPlaying=true; } });
+    envelope.addEventListener('click', () => { 
+        if(!envelope.classList.contains('opened')){ 
+            envelope.classList.add('opened'); 
+            setTimeout(()=>showChapter(0), 1000); 
+            isPlaying = true; 
+        } 
+    });
 
     function showChapter(index) {
       if(index < 0) return;
       if(progressAnimationId) cancelAnimationFrame(progressAnimationId);
+      
       if(index >= storyChapters.length){
         storyContainer.style.display='none'; detailsSection.style.display='flex';
         progressContainer.style.visibility='hidden'; indicatorsContainer.style.visibility='hidden';
         isPlaying=false; return;
       }
+      
       storyContainer.style.display='flex'; detailsSection.style.display='none';
       progressContainer.style.visibility='visible'; indicatorsContainer.style.visibility='visible';
+      
       chapters.forEach(c=>c.classList.remove('active')); chapters[index].classList.add('active');
-      segments.forEach((s,i)=>{ s.classList.remove('current','done'); if(i<index) s.classList.add('done'); if(i===index) s.classList.add('current'); const f=s.querySelector('.progress-fill'); if(f) f.remove(); });
+      segments.forEach((s,i)=>{ 
+          s.classList.remove('current','done'); 
+          if(i<index) s.classList.add('done'); 
+          if(i===index) s.classList.add('current'); 
+          const f=s.querySelector('.progress-fill'); if(f) f.remove(); 
+      });
       dots.forEach((d,i)=>{ d.classList.remove('active'); if(i===index) d.classList.add('active'); });
+      
       currentIndex = index; if(isPlaying) startSegmentFill(index);
     }
 
@@ -156,7 +211,12 @@
 
     document.getElementById('prevBtn').addEventListener('click', () => showChapter(currentIndex-1));
     document.getElementById('nextBtn').addEventListener('click', () => showChapter(currentIndex+1));
-    document.getElementById('pausePlayBtn').addEventListener('click', () => { isPlaying = !isPlaying; if(!isPlaying && progressAnimationId) cancelAnimationFrame(progressAnimationId); else showChapter(currentIndex); });
+    document.getElementById('pausePlayBtn').addEventListener('click', () => { 
+        isPlaying = !isPlaying; 
+        document.getElementById('pausePlayBtn').textContent = isPlaying ? '⏸️' : '▶️';
+        if(!isPlaying && progressAnimationId) cancelAnimationFrame(progressAnimationId); 
+        else showChapter(currentIndex); 
+    });
   })();
 </script>
 </body>

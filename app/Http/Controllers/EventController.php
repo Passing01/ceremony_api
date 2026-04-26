@@ -102,9 +102,17 @@ class EventController extends Controller
                     foreach ($array as $key => $value) {
                         $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
                         
-                        if ($request->hasFile($fullKey)) {
-                            $path = $request->file($fullKey)->store('events/media', 'public');
-                            $result[$key] = $path;
+                        $file = $request->file($fullKey);
+                        if ($file) {
+                            if (is_array($file)) {
+                                // Si c'est un tableau de fichiers, on prend le premier ou on les traite tous? 
+                                // Pour les templates, on prend généralement le premier
+                                $path = $file[0]->store('events/media', 'public');
+                                $result[$key] = $path;
+                            } else {
+                                $path = $file->store('events/media', 'public');
+                                $result[$key] = $path;
+                            }
                         } elseif (is_array($value)) {
                             $result[$key] = $processNestedFiles($value, $fullKey);
                         } else {
@@ -139,6 +147,8 @@ class EventController extends Controller
                     'invitation_text' => $invitationText,
                     'custom_data' => $customData,
                     'status' => 'active',
+                    'slug' => \Illuminate\Support\Str::slug($title) . '-' . \Illuminate\Support\Str::random(6),
+                    'short_link' => \Illuminate\Support\Str::random(10),
                 ]);
                 \Illuminate\Support\Facades\Log::info('Event created', ['id' => $event->id]);
 

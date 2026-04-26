@@ -104,13 +104,9 @@ class EventController extends Controller
                         
                         $file = $request->file($fullKey);
                         if ($file) {
-                            if (is_array($file)) {
-                                // Si c'est un tableau de fichiers, on prend le premier ou on les traite tous? 
-                                // Pour les templates, on prend généralement le premier
-                                $path = $file[0]->store('events/media', 'public');
-                                $result[$key] = $path;
-                            } else {
-                                $path = $file->store('events/media', 'public');
+                            $actualFile = is_array($file) ? reset($file) : $file;
+                            if ($actualFile instanceof \Illuminate\Http\UploadedFile) {
+                                $path = $actualFile->store('events/media', 'public');
                                 $result[$key] = $path;
                             }
                         } elseif (is_array($value)) {

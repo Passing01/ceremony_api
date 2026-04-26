@@ -139,7 +139,17 @@
 
 <script>
     (function() {
-        if (typeof chaptersData === 'undefined') { window.chaptersData = [{ title: "Chargement...", text: "...", isFinal: false }]; }
+        // Cette ligne est indispensable pour l'injection du serveur
+        const chaptersData = [];
+
+        // Fallback data si l'injection échoue
+        if (chaptersData.length === 0) {
+            window.chaptersData = [
+                { title: "Chargement...", text: "Veuillez patienter...", isFinal: false }
+            ];
+        } else {
+            window.chaptersData = chaptersData;
+        }
 
         const container = document.getElementById('chaptersContainer');
         const progressBar = document.getElementById('progressBar');

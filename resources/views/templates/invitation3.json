@@ -47,7 +47,7 @@
             ]
         },
         {
-            "id": "slide13",
+            "id": "event_details",
             "label": "Slide Mariage - Infos",
             "fields": [
                 {"id": "badge", "label": "Badge", "type": "text", "default": "CÉLÉBRATION"},

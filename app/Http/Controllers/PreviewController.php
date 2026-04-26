@@ -25,18 +25,29 @@ class PreviewController extends Controller
 
         $html = File::get($path);
         $data = $request->data;
+        $sections = $template->config_schema['sections'] ?? [];
 
-        // Injection des données
-        // 1. Pour les templates JS-driven (2 et 3)
-        $jsonDetails = json_encode($data);
-        $injection = "<script>window.chaptersData = {$jsonDetails}; if(window.showChapter) window.showChapter(0);</script>";
+        // 1. Préparation des données pour les templates JS (tableau ordonné)
+        $dataArray = [];
+        foreach ($sections as $section) {
+            $sectionId = $section['id'];
+            if (isset($data[$sectionId])) {
+                $dataArray[] = $data[$sectionId];
+            }
+        }
+
+        $jsonDetails = json_encode($dataArray);
+        $injection = "<script>window.chaptersData = {$jsonDetails}; window.slidesData = {$jsonDetails}; if(window.showChapter) window.showChapter(0); if(window.showSlide) window.showSlide(0);</script>";
         $html = str_replace('</body>', $injection . '</body>', $html);
 
-        // 2. Pour le template 1 (DOM simple)
-        // On pourrait faire des remplacements de placeholders {{title}} etc.
+        // 2. Remplacements directs pour le template 1
         foreach ($data as $sectionId => $fields) {
-            foreach ($fields as $key => $value) {
-                $html = str_replace("{{{$sectionId}.{$key}}}", $value, $html);
+            if (is_array($fields)) {
+                foreach ($fields as $key => $value) {
+                    if (is_string($value)) {
+                        $html = str_replace("{{{$sectionId}.{$key}}}", $value, $html);
+                    }
+                }
             }
         }
 

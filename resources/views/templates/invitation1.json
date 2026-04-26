@@ -80,7 +80,7 @@
             ]
         },
         {
-            "id": "celebration",
+            "id": "event_details",
             "label": "L'Invitation Finale",
             "fields": [
                 {"id": "badge", "label": "Badge", "type": "text", "default": "Célébration"},

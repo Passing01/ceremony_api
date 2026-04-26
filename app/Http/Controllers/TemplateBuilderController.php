@@ -172,6 +172,31 @@ class TemplateBuilderController extends Controller
 
         // Injection du token pour le RSVP
         $injection = "<script>window.guestToken = '{$token}';</script>";
+
+        // Injection des données personnalisées
+        $customData = $event->custom_data ?? [];
+        $sections = $event->template->config_schema['sections'] ?? [];
+        $dataArray = [];
+        foreach ($sections as $section) {
+            $sectionId = $section['id'];
+            if (isset($customData[$sectionId])) {
+                $dataArray[] = $customData[$sectionId];
+            }
+        }
+        $jsonDetails = json_encode($dataArray);
+        $injection .= "<script>window.chaptersData = {$jsonDetails}; window.slidesData = {$jsonDetails}; if(window.showChapter) window.showChapter(0); if(window.showSlide) window.showSlide(0);</script>";
+
+        // Remplacements pour template 1
+        foreach ($customData as $sectionId => $fields) {
+            if (is_array($fields)) {
+                foreach ($fields as $key => $value) {
+                    if (is_string($value)) {
+                        $html = str_replace("{{{$sectionId}.{$key}}}", $value, $html);
+                    }
+                }
+            }
+        }
+
         $html = str_replace('</body>', $injection . '</body>', $html);
 
         return response($html)->header('Content-Type', 'text/html');

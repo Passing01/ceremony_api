@@ -124,7 +124,7 @@ class EventController extends Controller
                             'invitation_token' => Str::uuid(),
                             'status' => 'pending',
                         ]);
-                        \App\Jobs\SendWhatsAppInvite::dispatch($guest);
+                        \App\Jobs\SendWhatsAppInvite::dispatchSync($guest);
                     }
                 }
 

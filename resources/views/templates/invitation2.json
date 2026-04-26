@@ -60,14 +60,14 @@
             ]
         },
         {
-            "id": "celebration",
-            "label": "L'Invitation",
+            "id": "event_details",
+            "label": "La Cérémonie",
             "fields": [
                 {"id": "badge", "label": "Badge", "type": "text", "default": "CÉLÉBRATION"},
                 {"id": "title", "label": "Titre", "type": "text", "default": "Nous nous marions"},
                 {"id": "story", "label": "Texte", "type": "textarea", "default": "Seriez-vous des nôtres pour écrire la suite ?"},
-                {"id": "date", "label": "Date", "type": "text", "default": "14 juin 2026"},
-                {"id": "location", "label": "Lieu", "type": "text", "default": "Château de Vaux-le-Vicomte"}
+                {"id": "date", "label": "Date", "type": "text", "default": "12 Juillet 2026"},
+                {"id": "location", "label": "Lieu", "type": "text", "default": "Château des Oliviers"}
             ]
         }
     ]

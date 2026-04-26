@@ -129,11 +129,28 @@ class EventController extends Controller
                 'short_link' => Str::random(10),
             ]);
 
+            // Gestion automatique des invités si fournis
+            if ($request->has('guests')) {
+                foreach ($request->guests as $guestData) {
+                    $guest = $event->guests()->create([
+                        'whatsapp_number' => $guestData['whatsapp_number'] ?? $guestData['phone'],
+                        'invitation_token' => Str::uuid(),
+                        'status' => 'pending',
+                    ]);
+
+                    // Envoi immédiat de l'invitation
+                    \App\Jobs\SendWhatsAppInvite::dispatch($guest);
+                }
+            }
+
             if ($credit) {
                 $credit->decrement('remaining_uses');
             }
 
-            return response()->json($event, 201);
+            return response()->json([
+                'message' => 'Événement créé et invitations envoyées !',
+                'event' => $event
+            ], 201);
         });
     }
 

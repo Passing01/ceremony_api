@@ -7,49 +7,26 @@
             "id": "intro",
             "label": "Introduction",
             "fields": [
-                {"id": "groom", "label": "Nom du Marié", "type": "text", "placeholder": "Tom"},
-                {"id": "bride", "label": "Nom de la Mariée", "type": "text", "placeholder": "Sarah"}
+                {"id": "groom", "label": "Nom du Marié", "type": "text", "default": "Tom"},
+                {"id": "bride", "label": "Nom de la Mariée", "type": "text", "default": "Sarah"}
             ]
         },
         {
             "id": "ch1",
             "label": "Chapitre 1 - La Rencontre",
             "fields": [
-                {"id": "title", "label": "Titre", "type": "text", "placeholder": "Le premier regard"},
-                {"id": "text", "label": "Histoire", "type": "textarea", "placeholder": "Racontez votre rencontre..."},
-                {"id": "date", "label": "Date/Lieu du chapitre", "type": "text", "placeholder": "Paris, Octobre 2020"},
-                {"id": "media", "label": "Photo ou Vidéo", "type": "media"}
-            ]
-        },
-        {
-            "id": "ch2",
-            "label": "Chapitre 2 - Le Chemin",
-            "fields": [
-                {"id": "title", "label": "Titre", "type": "text", "placeholder": "Main dans la main"},
-                {"id": "text", "label": "Histoire", "type": "textarea", "placeholder": "Votre parcours ensemble..."},
-                {"id": "date", "label": "Date/Lieu du chapitre", "type": "text", "placeholder": "Printemps 2022"},
-                {"id": "media", "label": "Photo ou Vidéo", "type": "media"}
-            ]
-        },
-        {
-            "id": "ch3",
-            "label": "Chapitre 3 - La Demande",
-            "fields": [
-                {"id": "title", "label": "Titre", "type": "text", "placeholder": "Le grand OUI"},
-                {"id": "text", "label": "Histoire", "type": "textarea", "placeholder": "Racontez la demande..."},
-                {"id": "date", "label": "Date/Lieu du chapitre", "type": "text", "placeholder": "Venise, 2024"},
-                {"id": "media", "label": "Photo ou Vidéo", "type": "media"}
+                {"id": "title", "label": "Titre", "type": "text", "default": "Le premier regard"},
+                {"id": "text", "label": "Histoire", "type": "textarea", "default": "On s'est rencontré lors d'une conférence..."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Paris, Octobre 2020"},
+                {"id": "media", "label": "Photo ou Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622"}
             ]
         },
         {
             "id": "event",
-            "label": "La Cérémonie",
+            "label": "Détails Techniques",
             "fields": [
-                {"id": "title", "label": "Titre", "type": "text", "placeholder": "Nous nous marions"},
-                {"id": "date", "label": "Date de l'événement", "type": "text", "placeholder": "14 Juin 2026"},
-                {"id": "time", "label": "Heure", "type": "text", "placeholder": "15:30"},
-                {"id": "location", "label": "Lieu de la cérémonie", "type": "text", "placeholder": "Mairie de Paris"},
-                {"id": "reception", "label": "Lieu de la réception", "type": "text", "placeholder": "Château de Versailles"}
+                {"id": "date", "label": "Date", "type": "text", "default": "14 Juin 2026"},
+                {"id": "location", "label": "Lieu", "type": "text", "default": "Mairie de Paris"}
             ]
         }
     ]

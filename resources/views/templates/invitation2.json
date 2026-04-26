@@ -7,51 +7,40 @@
             "id": "intro",
             "label": "Introduction",
             "fields": [
-                {"id": "title", "label": "Titre", "type": "text", "placeholder": "Wedding Day"},
-                {"id": "groom", "label": "Marié", "type": "text", "placeholder": "Jean"},
-                {"id": "bride", "label": "Mariée", "type": "text", "placeholder": "Marie"}
+                {"id": "title", "label": "Titre", "type": "text", "default": "Wedding Day"},
+                {"id": "groom", "label": "Marié", "type": "text", "default": "Jean"},
+                {"id": "bride", "label": "Mariée", "type": "text", "default": "Marie"}
             ]
         },
         {
             "id": "ch1",
-            "label": "Chapitre 1",
+            "label": "Chapitre 1 - La Rencontre",
             "fields": [
-                {"id": "badge", "label": "Badge", "type": "text", "placeholder": "NOTRE RENCONTRE"},
-                {"id": "title", "label": "Titre", "type": "text", "placeholder": "Le premier regard"},
-                {"id": "story", "label": "Histoire", "type": "textarea"},
-                {"id": "date", "label": "Date/Lieu", "type": "text"},
-                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media"}
+                {"id": "badge", "label": "Badge", "type": "text", "default": "NOTRE RENCONTRE"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "Le premier regard"},
+                {"id": "story", "label": "Histoire", "type": "textarea", "default": "Tout a commencé un soir de pluie..."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Paris, 2020"},
+                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622"}
             ]
         },
         {
             "id": "ch2",
-            "label": "Chapitre 2",
+            "label": "Chapitre 2 - Le Chemin",
             "fields": [
-                {"id": "badge", "label": "Badge", "type": "text"},
-                {"id": "title", "label": "Titre", "type": "text"},
-                {"id": "story", "label": "Histoire", "type": "textarea"},
-                {"id": "date", "label": "Date/Lieu", "type": "text"},
-                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media"}
-            ]
-        },
-        {
-            "id": "ch3",
-            "label": "Chapitre 3",
-            "fields": [
-                {"id": "badge", "label": "Badge", "type": "text"},
-                {"id": "title", "label": "Titre", "type": "text"},
-                {"id": "story", "label": "Histoire", "type": "textarea"},
-                {"id": "date", "label": "Date/Lieu", "type": "text"},
-                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media"}
+                {"id": "badge", "label": "Badge", "type": "text", "default": "NOTRE CHEMIN"},
+                {"id": "title", "label": "Titre", "type": "text", "default": "Main dans la main"},
+                {"id": "story", "label": "Histoire", "type": "textarea", "default": "Nous avons parcouru le monde ensemble..."},
+                {"id": "date", "label": "Date/Lieu", "type": "text", "default": "Asie, 2022"},
+                {"id": "mediaSrc", "label": "Lien Photo/Vidéo", "type": "media", "default": "https://images.unsplash.com/photo-1519225421980-715cb0215aed"}
             ]
         },
         {
             "id": "event",
-            "label": "Détails de l'événement",
+            "label": "La Cérémonie",
             "fields": [
-                {"id": "title", "label": "Titre", "type": "text", "placeholder": "La Cérémonie"},
-                {"id": "date", "label": "Date", "type": "text"},
-                {"id": "location", "label": "Lieu", "type": "text"}
+                {"id": "title", "label": "Titre", "type": "text", "default": "Le grand jour"},
+                {"id": "date", "label": "Date", "type": "text", "default": "12 Juillet 2026"},
+                {"id": "location", "label": "Lieu", "type": "text", "default": "Château des Oliviers"}
             ]
         }
     ]

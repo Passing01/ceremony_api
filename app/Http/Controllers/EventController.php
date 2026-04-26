@@ -58,116 +58,92 @@ class EventController extends Controller
             'data' => 'nullable|array', // Support pour le format Flutter
             'custom_fields' => 'nullable|array',
             'invitation_text' => 'nullable|string|max:1000',
-            'track_id' => 'nullable|uuid|exists:tracks,id',
         ]);
 
-        return response()->json(['debug' => 'reached_after_validation'], 200);
-
         $user = $request->user();
+        \Illuminate\Support\Facades\Log::info('Creating event for user', ['user_id' => $user->id, 'template_id' => $request->template_id]);
 
-        // Check credits
-        $credit = UserCredit::where('user_id', $user->id)
-            ->where('template_id', $request->template_id)
-            ->where('remaining_uses', '>', 0)
-            ->first();
+        try {
+            return DB::transaction(function () use ($request, $user) {
+                // Check credits
+                $credit = UserCredit::where('user_id', $user->id)
+                    ->where('template_id', $request->template_id)
+                    ->where('remaining_uses', '>', 0)
+                    ->first();
 
-        // For V1 validation, we might skip strict credit check if payment flow isn't ready, 
-        // but per spec we should check.
-        // if (!$credit) {
-        //     return response()->json(['message' => 'Crédits insuffisants pour ce modèle.'], 403);
-        // }
+                $eventType = $request->input('event_type', 'custom');
+                \Illuminate\Support\Facades\Log::info('Event type selected', ['type' => $eventType]);
 
-        return DB::transaction(function () use ($request, $user, $credit) {
-            $eventType = $request->input('event_type', 'custom');
-            $eventTypes = config('event_types');
-            $eventTypeConfig = $eventTypes[$eventType] ?? ['fields' => []];
+                // Handle dynamic image fields
+                $imageFields = [];
+                $eventTypes = config('event_types');
+                $eventTypeConfig = $eventTypes[$eventType] ?? ['fields' => []];
 
-            // Handle dynamic image fields based on event type
-            $imageFields = [];
-            foreach ($eventTypeConfig['fields'] as $field) {
-                if ($field['type'] === 'image' && $request->hasFile($field['name'])) {
-                    $imagePath = $request->file($field['name'])->store('events/photos', 'public');
-                    $imageFields[$field['name']] = $imagePath;
+                foreach ($eventTypeConfig['fields'] as $field) {
+                    if ($field['type'] === 'image' && $request->hasFile($field['name'])) {
+                        $imagePath = $request->file($field['name'])->store('events/photos', 'public');
+                        $imageFields[$field['name']] = $imagePath;
+                    }
                 }
-            }
 
-            // Merge custom data with all fields
-            $customData = $request->input('custom_data', []);
-            if (is_string($customData)) $customData = json_decode($customData, true) ?? [];
-            
-            $data = $request->input('data', []);
-            if (is_string($data)) $data = json_decode($data, true) ?? [];
+                // Merge data
+                $customData = $request->input('custom_data', []);
+                if (is_string($customData)) $customData = json_decode($customData, true) ?? [];
+                $data = $request->input('data', []);
+                if (is_string($data)) $data = json_decode($data, true) ?? [];
+                
+                $custom = array_merge($customData, $data, $imageFields);
 
-            $customFields = $request->input('custom_fields', []);
-            if (is_string($customFields)) $customFields = json_decode($customFields, true) ?? [];
+                $eventDate = $request->input('event_date') ?? now();
 
-            $custom = array_merge(
-                $customData,
-                $data, // New data format from Flutter
-                $customFields,
-                $imageFields
-            );
+                \Illuminate\Support\Facades\Log::info('Attempting Event::create');
+                $event = Event::create([
+                    'owner_id' => $user->id,
+                    'template_id' => $request->template_id,
+                    'track_id' => $request->input('track_id'),
+                    'event_type' => $eventType,
+                    'title' => $request->title,
+                    'event_date' => $eventDate,
+                    'invitation_text' => $request->input('invitation_text'),
+                    'location' => $request->input('location'),
+                    'custom_data' => $custom,
+                    'slug' => Str::slug($request->title) . '-' . Str::random(6),
+                    'short_link' => Str::random(10),
+                ]);
+                \Illuminate\Support\Facades\Log::info('Event created', ['id' => $event->id]);
 
-            // Add any non-image fields from the request
-            foreach ($eventTypeConfig['fields'] as $field) {
-                if ($field['type'] !== 'image' && $request->has($field['name'])) {
-                    $custom[$field['name']] = $request->input($field['name']);
+                // Guests
+                $guests = $request->input('guests');
+                if (is_string($guests)) $guests = json_decode($guests, true);
+
+                if (is_array($guests)) {
+                    \Illuminate\Support\Facades\Log::info('Processing guests', ['count' => count($guests)]);
+                    foreach ($guests as $guestData) {
+                        $guest = $event->guests()->create([
+                            'whatsapp_number' => $guestData['whatsapp_number'] ?? $guestData['phone'] ?? null,
+                            'invitation_token' => Str::uuid(),
+                            'status' => 'pending',
+                        ]);
+                        \App\Jobs\SendWhatsAppInvite::dispatch($guest);
+                    }
                 }
-            }
 
-            // Fallback for event_date if not in root
-            $eventDate = $request->input('event_date');
-            if (!$eventDate && isset($custom['event']['date'])) {
-                $eventDate = $custom['event']['date'];
-            }
-            if (!$eventDate) $eventDate = now(); // Final fallback
+                if ($credit) {
+                    $credit->decrement('remaining_uses');
+                }
 
-            // Support multiple locations if provided; fallback to single location
-            $locations = $request->input('locations');
-            $locationPayload = $locations ?? $request->input('location');
-
-            $event = Event::create([
-                'owner_id' => $user->id,
-                'template_id' => $request->template_id,
-                'track_id' => $request->input('track_id'),
-                'event_type' => $eventType,
-                'title' => $request->title,
-                'event_date' => $eventDate,
-                'invitation_text' => $request->input('invitation_text'),
-                'location' => $locationPayload,
-                'custom_data' => $custom,
-                'slug' => Str::slug($request->title) . '-' . Str::random(6),
-                'short_link' => Str::random(10),
+                return response()->json([
+                    'message' => 'Événement créé et invitations envoyées !',
+                    'event' => $event
+                ], 201);
+            });
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error creating event', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
-
-            // Gestion automatique des invités si fournis
-            $guests = $request->input('guests');
-            if (is_string($guests)) {
-                $guests = json_decode($guests, true);
-            }
-
-            if (is_array($guests)) {
-                foreach ($guests as $guestData) {
-                    $guest = $event->guests()->create([
-                        'whatsapp_number' => $guestData['whatsapp_number'] ?? $guestData['phone'],
-                        'invitation_token' => Str::uuid(),
-                        'status' => 'pending',
-                    ]);
-
-                    // Envoi immédiat de l'invitation
-                    \App\Jobs\SendWhatsAppInvite::dispatch($guest);
-                }
-            }
-
-            if ($credit) {
-                $credit->decrement('remaining_uses');
-            }
-
-            return response()->json([
-                'message' => 'Événement créé et invitations envoyées !',
-                'event' => $event
-            ], 201);
-        });
+            return response()->json(['message' => 'Erreur interne lors de la création.', 'error' => $e->getMessage()], 500);
+        }
     }
 
     public function update(Request $request, $id)

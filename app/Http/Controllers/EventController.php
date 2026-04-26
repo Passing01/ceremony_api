@@ -43,17 +43,19 @@ class EventController extends Controller
             'template_id' => [
                 'required',
                 function ($attribute, $value, $fail) use ($validTemplates) {
-                    if (!in_array((int) $value, $validTemplates, true)) {
-                        $fail('The selected template id is invalid. Valid IDs are: ' . implode(', ', $validTemplates));
+                    // On accepte les IDs numériques (anciens) ou les nouveaux IDs de la DB
+                    if (!is_numeric($value) && !\App\Models\Template::where('id', $value)->exists()) {
+                        $fail('The selected template id is invalid.');
                     }
                 },
             ],
             'title' => 'required|string|max:255',
-            'event_date' => 'required|date',
+            'event_date' => 'nullable|date',
             'location' => 'nullable|array',
             'locations' => 'nullable|array',
-            'event_type' => 'required|string',
+            'event_type' => 'nullable|string',
             'custom_data' => 'nullable|array',
+            'data' => 'nullable|array', // Support pour le format Flutter
             'custom_fields' => 'nullable|array',
             'invitation_text' => 'nullable|string|max:1000',
             'track_id' => 'nullable|uuid|exists:tracks,id',
@@ -81,9 +83,10 @@ class EventController extends Controller
         //     return response()->json(['message' => 'Crédits insuffisants pour ce modèle.'], 403);
         // }
 
-        return DB::transaction(function () use ($request, $user, $credit, $eventTypes) {
-            // Get event type configuration
-            $eventTypeConfig = $eventTypes[$request->event_type];
+        return DB::transaction(function () use ($request, $user, $credit) {
+            $eventType = $request->input('event_type', 'custom');
+            $eventTypes = config('event_types');
+            $eventTypeConfig = $eventTypes[$eventType] ?? ['fields' => []];
 
             // Handle dynamic image fields based on event type
             $imageFields = [];
@@ -97,6 +100,7 @@ class EventController extends Controller
             // Merge custom data with all fields
             $custom = array_merge(
                 $request->input('custom_data', []),
+                $request->input('data', []), // New data format from Flutter
                 $request->input('custom_fields', []),
                 $imageFields
             );
@@ -108,6 +112,13 @@ class EventController extends Controller
                 }
             }
 
+            // Fallback for event_date if not in root
+            $eventDate = $request->input('event_date');
+            if (!$eventDate && isset($custom['event']['date'])) {
+                $eventDate = $custom['event']['date'];
+            }
+            if (!$eventDate) $eventDate = now(); // Final fallback
+
             // Support multiple locations if provided; fallback to single location
             $locations = $request->input('locations');
             $locationPayload = $locations ?? $request->input('location');
@@ -116,14 +127,14 @@ class EventController extends Controller
                 'owner_id' => $user->id,
                 'template_id' => $request->template_id,
                 'track_id' => $request->input('track_id'),
-                'event_type' => $request->event_type,
+                'event_type' => $eventType,
                 'title' => $request->title,
-                'event_date' => $request->event_date,
+                'event_date' => $eventDate,
                 'invitation_text' => $request->input('invitation_text'),
                 'location' => $locationPayload,
                 'custom_data' => $custom,
                 'slug' => Str::slug($request->title) . '-' . Str::random(6),
-                'short_link' => Str::random(10), // Placeholder for real short link logic
+                'short_link' => Str::random(10),
             ]);
 
             if ($credit) {

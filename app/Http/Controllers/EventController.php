@@ -236,15 +236,17 @@ class EventController extends Controller
     {
         $event = Event::where('slug', $slug)->firstOrFail();
 
-        // Check authorization if needed, or public stats? 
-        // Usually stats are for the owner.
-        // if ($request->user()->id !== $event->owner_id) abort(403);
-
         $stats = [
             'total' => $event->guests()->count(),
             'confirmed' => $event->guests()->where('rsvp', 'confirmed')->count(),
             'declined' => $event->guests()->where('rsvp', 'declined')->count(),
             'waiting' => $event->guests()->where('rsvp', 'waiting')->count(),
+            'total_companions' => $event->guests()->where('rsvp', 'confirmed')->sum('companion_count'),
+            'feedbacks' => $event->guests()
+                ->whereNotNull('message')
+                ->where('message', '!=', '')
+                ->orderBy('updated_at', 'desc')
+                ->get(['id', 'whatsapp_number', 'rsvp', 'companion_count', 'message', 'updated_at'])
         ];
 
         return response()->json($stats);

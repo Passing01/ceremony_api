@@ -16,6 +16,8 @@ class Guest extends Model
         'invitation_token',
         'status',
         'rsvp',
+        'companion_count',
+        'message',
         'check_in_at',
     ];
 

@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Emma & Louis · Il était une fois nous</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Cormorant Garamond', 'Georgia', 'Times New Roman', serif;
+      background: linear-gradient(135deg, #f9f6f0 0%, #f0ebe0 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 15px;
+      background-attachment: fixed;
+    }
+
+    /* ========== SCÈNE 3D DE L'ENVELOPPE ========== */
+    .scene {
+      width: 100%;
+      max-width: 500px;
+      perspective: 1500px;
+      position: relative;
+    }
+
+    .envelope-3d {
+      width: 100%;
+      height: 680px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      cursor: pointer;
+    }
+
+    .envelope-3d.opened {
+      transform: rotateX(-5deg);
+    }
+
+    /* Face avant de l'enveloppe */
+    .envelope-front {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(160deg, #f5efe2 0%, #ede4d1 100%);
+      border-radius: 12px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(180,150,100,0.25);
+      backface-visibility: hidden;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      transition: opacity 0.5s ease 0.8s;
+    }
+
+    .envelope-3d.opened .envelope-front {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Rabat supérieur */
+    .flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 55%;
+      background: linear-gradient(175deg, #f7f2e6 0%, #e8ddc8 100%);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      transform-origin: top center;
+      transition: transform 1.3s cubic-bezier(0.68, -0.25, 0.27, 1.2);
+      z-index: 3;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    .envelope-3d.opened .flap {
+      transform: rotateX(185deg);
+    }
+
+    /* Sceau de cire */
+    .wax-seal {
+      position: absolute;
+      top: 42%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 75px;
+      height: 75px;
+      background: radial-gradient(circle at 40% 40%, #e6c84d, #b8941f);
+      border-radius: 50%;
+      z-index: 4;
+      box-shadow: 0 10px 30px rgba(180,140,20,0.5), inset 0 2px 8px rgba(255,255,255,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      color: #faf6ed;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      transition: all 0.7s ease;
+      border: 3px solid rgba(255,255,255,0.3);
+    }
+
+    .envelope-3d.opened .wax-seal {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.2) rotate(90deg);
+    }
+
+    /* Texte sur l'enveloppe */
+    .envelope-text {
+      position: absolute;
+      bottom: 22%;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      z-index: 1;
+      transition: opacity 0.6s ease;
+    }
+
+    .envelope-3d.opened .envelope-text {
+      opacity: 0;
+    }
+
+    .envelope-names {
+      font-size: 2rem;
+      color: #8b7755;
+      letter-spacing: 3px;
+      font-weight: 400;
+    }
+
+    .envelope-subtitle {
+      font-size: 0.9rem;
+      color: #b8a88a;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin-top: 5px;
+    }
+
+    /* Indication tactile */
+    .tap-hint {
+      position: absolute;
+      bottom: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.85rem;
+      color: #c0af8e;
+      z-index: 1;
+      animation: float 2.5s ease-in-out infinite;
+      letter-spacing: 2px;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-8px); }
+    }
+
+    /* Motif décoratif sur l'enveloppe */
+    .envelope-pattern {
+      position: absolute;
+      top: 15%;
+      left: 10%;
+      right: 10%;
+      bottom: 25%;
+      border: 1px solid rgba(180,150,100,0.2);
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ========== CONTENU INTÉRIEUR (CARTE) ========== */
+    .inner-card {
+      position: absolute;
+      top: 3%;
+      left: 3%;
+      width: 94%;
+      height: 94%;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+      z-index: 0;
+      opacity: 0;
+      transform: translateY(20px) scale(0.97);
+      transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .envelope-3d.opened .inner-card {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Bande dorée supérieure */
+    .gold-band {
+      height: 5px;
+      background: linear-gradient(90deg, #d4af37, #e8d48b, #d4af37);
+      flex-shrink: 0;
+    }
+
+    /* ========== BARRE DE PROGRESSION ========== */
+    .progress-bar-wrapper {
+      padding: 10px 20px;
+      display: flex;
+      gap: 6px;
+      background: rgba(255,255,255,0.98);
+      flex-shrink: 0;
+    }
+
+    .progress-segment {
+      flex: 1;
+      height: 4px;
+      background: #e8e2d5;
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-segment.done {
+      background: #d4af37;
+    }
+
+    .progress-segment.current {
+      background: #e8e2d5;
+    }
+
+    .progress-filler {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: #d4af37;
+      width: 0%;
+      border-radius: 3px;
+      transition: none;
+    }
+
+    /* ========== CONTENEUR DES SLIDES ========== */
+    .slides-viewport {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      scroll-behavior: smooth;
+    }
+
+    /* Slide commun */
+    .slide {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 380px;
+      padding: 25px;
+      text-align: center;
+      animation: slideEnter 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    .slide.visible {
+      display: flex;
+    }
+
+    @keyframes slideEnter {
+      0% { opacity: 0; transform: translateX(25px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ========== SLIDE TEXTE (CHAPITRE) ========== */
+    .chapter-badge {
+      font-size: 0.75rem;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #d4af37;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(212,175,55,0.35);
+      padding-bottom: 8px;
+      display: inline-block;
+    }
+
+    .chapter-title {
+      font-size: 2.4rem;
+      color: #3a3a3a;
+      margin-bottom: 18px;
+      font-weight: 400;
+      letter-spacing: 1px;
+      line-height: 1.2;
+    }
+
+    .chapter-story {
+      font-size: 1.15rem;
+      color: #6b6b6b;
+      line-height: 1.7;
+      margin: 5px 0 18px;
+      max-width: 330px;
+      font-weight: 300;
+    }
+
+    .chapter-date {
+      font-size: 1rem;
+      color: #b59d5e;
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+
+    /* ========== SLIDE MÉDIA PLEIN ÉCRAN ========== */
+    .media-slide {
+      padding: 0;
+      min-height: 380px;
+      background: #faf8f3;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .media-full {
+      width: 100%;
+      height: 100%;
+      min-height: 380px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .media-full-video {
+      width: 100%;
+      height: 100%;
+      min-height: 380px;
+      object-fit: cover;
+      background: #000;
+    }
+
+    .media-overlay {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.45);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      backdrop-filter: blur(4px);
+      text-align: center;
+    }
+
+    /* ========== SLIDE FORMULAIRE RSVP ========== */
+    .rsvp-form-container {
+      width: 100%;
+      max-width: 340px;
+      margin: 5px 0;
+    }
+
+    .rsvp-field {
+      width: 100%;
+      padding: 13px 16px;
+      margin-bottom: 10px;
+      border: 1px solid #e0d8c6;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      background: #fdfcf7;
+      color: #3a3a3a;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+
+    .rsvp-field:focus {
+      border-color: #d4af37;
+      box-shadow: 0 0 0 3px rgba(212,175,55,0.1);
+      outline: none;
+    }
+
+    .rsvp-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #d4af37, #c09c2e);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(180,150,30,0.3);
+    }
+
+    .rsvp-submit:hover {
+      background: linear-gradient(135deg, #c9a430, #ad8c25);
+      box-shadow: 0 12px 30px rgba(180,150,30,0.4);
+      transform: translateY(-1px);
+    }
+
+    .thank-you-message {
+      display: none;
+      padding: 25px;
+      text-align: center;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .thank-you-message.show {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .thank-you-icon {
+      font-size: 3.5rem;
+      margin-bottom: 15px;
+    }
+
+    /* ========== NAVIGATION ========== */
+    .nav-panel {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      padding: 10px 0 15px;
+      flex-shrink: 0;
+    }
+
+    .nav-arrow {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(212,175,55,0.5);
+      background: white;
+      color: #6b6b6b;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    .nav-arrow:hover {
+      background: rgba(212,175,55,0.08);
+      border-color: #d4af37;
+      color: #3a3a3a;
+    }
+
+    .play-pause-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(212,175,55,0.5);
+      background: white;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    .play-pause-btn:hover {
+      background: rgba(212,175,55,0.08);
+    }
+
+    .dot-indicators {
+      display: flex;
+      gap: 6px;
+      padding: 5px 0;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ddd8cc;
+      transition: all 0.35s ease;
+    }
+
+    .dot.highlighted {
+      background: #d4af37;
+      transform: scale(1.5);
+      box-shadow: 0 0 10px rgba(212,175,55,0.5);
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 420px) {
+      .envelope-3d {
+        height: 580px;
+      }
+      .chapter-title {
+        font-size: 1.9rem;
+      }
+      .envelope-names {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="scene">
+  <!-- ENVELOPPE 3D -->
+  <div class="envelope-3d" id="envelope3d">
+    <!-- Face avant -->
+    <div class="envelope-front">
+      <div class="flap"></div>
+      <div class="wax-seal">💝</div>
+      <div class="envelope-pattern"></div>
+      <div class="envelope-text">
+        <div class="envelope-names">Emma & Louis</div>
+        <div class="envelope-subtitle">Notre histoire</div>
+      </div>
+      <div class="tap-hint">✉️ Ouvrir l'invitation</div>
+    </div>
+
+    <!-- Carte intérieure -->
+    <div class="inner-card" id="innerCard">
+      <div class="gold-band"></div>
+
+      <!-- Barre progression -->
+      <div class="progress-bar-wrapper" id="progressBarWrapper"></div>
+
+      <!-- Slides -->
+      <div class="slides-viewport" id="slidesViewport"></div>
+
+      <!-- Indicateurs -->
+      <div class="dot-indicators" id="dotIndicators"></div>
+
+      <!-- Navigation -->
+      <div class="nav-panel">
+        <button class="nav-arrow" id="prevSlide" aria-label="Précédent">←</button>
+        <button class="play-pause-btn" id="toggleAutoplay" aria-label="Pause/Lecture">⏯️</button>
+        <button class="nav-arrow" id="nextSlide" aria-label="Suivant">→</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (() => {
+    // ========== DONNÉES DES SLIDES (alternance texte / média) ==========
+    const slidesData = [
+      // Chapitre 1
+      {
+        type: 'chapter',
+        badge: 'Chapitre I',
+        title: 'Le premier regard',
+        story: "C'était un soir d'automne, sous les lumières de la ville. Nos regards se sont croisés et le monde s'est arrêté.",
+        date: 'Paris, 12 octobre 2020'
+      },
+      // Média 1 (image)
+      {
+        type: 'media',
+        mediaType: 'image',
+        mediaSrc: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&h=600&fit=crop',
+        caption: 'Pont Alexandre III, ce soir-là'
+      },
+      // Chapitre 2
+      {
+        type: 'chapter',
+        badge: 'Chapitre II',
+        title: 'La promenade',
+        story: "Nos mains se sont effleurées sur le Pont des Arts. Nous avons parlé jusqu'à l'aube, sans voir le temps passer.",
+        date: 'Un matin de printemps 2021'
+      },
+      // Média 2 (vidéo)
+      {
+        type: 'media',
+        mediaType: 'video',
+        mediaSrc: 'https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4',
+        caption: 'Les quais de Seine, notre refuge'
+      },
+      // Chapitre 3
+      {
+        type: 'chapter',
+        badge: 'Chapitre III',
+        title: 'Le voyage',
+        story: "Perdus dans les collines toscanes, nous avons compris que chaque route menait l'un vers l'autre.",
+        date: 'Été 2022'
+      },
+      // Média 3 (image)
+      {
+        type: 'media',
+        mediaType: 'image',
+        mediaSrc: 'https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?w=800&h=600&fit=crop',
+        caption: 'Val d\'Orcia, Toscane'
+      },
+      // Chapitre 4
+      {
+        type: 'chapter',
+        badge: 'Chapitre IV',
+        title: 'Notre chez-nous',
+        story: "Un petit cocon à deux, rempli de rires, de plantes et de projets. Le début d'une nouvelle vie.",
+        date: 'Automne 2023'
+      },
+      // Média 4 (image)
+      {
+        type: 'media',
+        mediaType: 'image',
+        mediaSrc: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop',
+        caption: 'Bienvenue chez nous'
+      },
+      // Chapitre 5
+      {
+        type: 'chapter',
+        badge: 'Chapitre V',
+        title: 'Les aventures',
+        story: "Des aurores boréales aux nuits étoilées, chaque voyage renforce ce qui nous unit.",
+        date: 'Hiver 2024'
+      },
+      // Média 5 (vidéo)
+      {
+        type: 'media',
+        mediaType: 'video',
+        mediaSrc: 'https://assets.mixkit.co/videos/preview/mixkit-aurora-borealis-over-snowy-mountains-4130-large.mp4',
+        caption: 'Laponie, sous les étoiles'
+      },
+      // Chapitre 6
+      {
+        type: 'chapter',
+        badge: 'Chapitre VI',
+        title: 'La demande',
+        story: "Sous un ciel étoilé, un genou à terre, la plus belle question a reçu la plus belle réponse.",
+        date: '23 septembre 2025',
+        extraHtml: '<div style="font-size:1.4rem; color:#d4af37; margin-top:15px;">Elle a dit <strong>OUI</strong> 💍</div>'
+      },
+      // Média 6 (image bague)
+      {
+        type: 'media',
+        mediaType: 'image',
+        mediaSrc: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=800&h=600&fit=crop',
+        caption: 'Le plus beau des oui'
+      },
+      // Chapitre 7 : Mariage
+      {
+        type: 'chapter',
+        badge: 'Célébration',
+        title: 'Nous nous marions',
+        story: "Et nous serions honorés de vous avoir à nos côtés pour écrire la suite de notre histoire.",
+        date: '',
+        extraHtml: '<div style="font-size:1.8rem; color:#b59d5e; margin:15px 0; font-weight:400;">14 juin 2026</div><div style="color:#6b6b6b;">Château de Vaux-le-Vicomte</div>'
+      },
+      // Chapitre 8 : RSVP
+      {
+        type: 'rsvp',
+        badge: 'RSVP',
+        title: 'Votre réponse',
+        story: "Faites-nous savoir si vous serez des nôtres pour ce jour si spécial.",
+        date: ''
+      }
+    ];
+
+    // ========== ÉTAT ==========
+    let currentSlide = 0;
+    let isAutoplayOn = false;
+    let fillAnimationId = null;
+    const SLIDE_DURATION = 5000; // 5 secondes par slide
+
+    // ========== ÉLÉMENTS DOM ==========
+    const envelope3d = document.getElementById('envelope3d');
+    const slidesViewport = document.getElementById('slidesViewport');
+    const progressBarWrapper = document.getElementById('progressBarWrapper');
+    const dotIndicators = document.getElementById('dotIndicators');
+    const prevBtn = document.getElementById('prevSlide');
+    const nextBtn = document.getElementById('nextSlide');
+    const toggleBtn = document.getElementById('toggleAutoplay');
+
+    // ========== CONSTRUIRE LES SLIDES ==========
+    function buildSlideHTML(data, index) {
+      if (data.type === 'chapter') {
+        const extraContent = data.extraHtml || '';
+        return `
+          <div class="slide chapter-slide" data-slide="${index}">
+            <div class="chapter-badge">${data.badge}</div>
+            <div class="chapter-title">${data.title}</div>
+            <div class="chapter-story">${data.story}</div>
+            ${data.date ? `<div class="chapter-date">${data.date}</div>` : ''}
+            ${extraContent}
+          </div>
+        `;
+      } else if (data.type === 'media') {
+        if (data.mediaType === 'image') {
+          return `
+            <div class="slide media-slide" data-slide="${index}">
+              <img class="media-full" src="${data.mediaSrc}" alt="${data.caption || ''}" onerror="this.style.display='none'; this.parentElement.querySelector('.media-overlay').style.display='none';">
+              ${data.caption ? `<div class="media-overlay">${data.caption}</div>` : ''}
+            </div>
+          `;
+        } else if (data.mediaType === 'video') {
+          return `
+            <div class="slide media-slide" data-slide="${index}">
+              <video class="media-full-video" src="${data.mediaSrc}" controls muted loop playsinline onerror="this.style.display='none'; this.parentElement.querySelector('.media-overlay').style.display='none';"></video>
+              ${data.caption ? `<div class="media-overlay">${data.caption}</div>` : ''}
+            </div>
+          `;
+        }
+      } else if (data.type === 'rsvp') {
+        return `
+          <div class="slide chapter-slide" data-slide="${index}">
+            <div class="chapter-badge">${data.badge}</div>
+            <div class="chapter-title">${data.title}</div>
+            <div class="chapter-story">${data.story}</div>
+            <div class="rsvp-form-container">
+              <input class="rsvp-field" type="text" placeholder="Votre nom complet" id="rsvpName" required>
+              <input class="rsvp-field" type="email" placeholder="Votre email" id="rsvpEmail" required>
+              <select class="rsvp-field" id="rsvpAttendance" required>
+                <option value="">Serez-vous présent(e) ?</option>
+                <option value="oui">✨ Avec grand plaisir !</option>
+                <option value="peut-etre">🤔 Peut-être, je confirme bientôt</option>
+                <option value="non">💔 Malheureusement non</option>
+              </select>
+              <input class="rsvp-field" type="number" placeholder="Nombre d'accompagnants" id="rsvpGuests" min="0" max="8" value="0">
+              <textarea class="rsvp-field" placeholder="Un petit mot doux pour les mariés..." id="rsvpMessage" rows="3" style="resize:vertical;"></textarea>
+              <button class="rsvp-submit" id="rsvpSubmitBtn">Confirmer ma présence ✨</button>
+              <div class="thank-you-message" id="thankYouMsg">
+                <div class="thank-you-icon">💌</div>
+                <div style="font-size:1.2rem; color:#3a3a3a;">Merci infiniment !</div>
+                <div style="color:#6b6b6b; margin-top:8px;">Votre réponse a été enregistrée avec amour.</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      return '';
+    }
+
+    // Remplir les slides
+    slidesViewport.innerHTML = slidesData.map((data, i) => buildSlideHTML(data, i)).join('');
+
+    // ========== BARRE DE PROGRESSION & DOTS ==========
+    slidesData.forEach((_, i) => {
+      const seg = document.createElement('div');
+      seg.className = 'progress-segment';
+      seg.dataset.segment = i;
+      const filler = document.createElement('div');
+      filler.className = 'progress-filler';
+      seg.appendChild(filler);
+      progressBarWrapper.appendChild(seg);
+
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.dataset.dot = i;
+      dotIndicators.appendChild(dot);
+    });
+
+    const progressSegments = document.querySelectorAll('.progress-segment');
+    const progressFillers = document.querySelectorAll('.progress-filler');
+    const allSlides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+
+    // ========== AFFICHER UN SLIDE ==========
+    function showSlide(index) {
+      if (index < 0 || index >= slidesData.length) return;
+      
+      stopFillAnimation();
+      resetAllFillers();
+      
+      progressSegments.forEach((seg, i) => {
+        seg.classList.remove('done', 'current');
+        if (i < index) seg.classList.add('done');
+        if (i === index) seg.classList.add('current');
+      });
+
+      allSlides.forEach((slide, i) => {
+        slide.classList.remove('visible');
+        if (i === index) slide.classList.add('visible');
+      });
+
+      dots.forEach((dot, i) => {
+        dot.classList.remove('highlighted');
+        if (i === index) dot.classList.add('highlighted');
+      });
+
+      currentSlide = index;
+
+      if (isAutoplayOn) {
+        startFillForCurrent();
+      }
+    }
+
+    function resetAllFillers() {
+      progressFillers.forEach(f => { f.style.width = '0%'; });
+    }
+
+    // ========== AUTOPLAY & REMPLISSAGE ==========
+    function stopFillAnimation() {
+      if (fillAnimationId) {
+        cancelAnimationFrame(fillAnimationId);
+        fillAnimationId = null;
+      }
+    }
+
+    function startFillForCurrent() {
+      stopFillAnimation();
+      const filler = progressFillers[currentSlide];
+      if (!filler) return;
+      filler.style.width = '0%';
+      const startTime = performance.now();
+      
+      function updateFill(now) {
+        const elapsed = now - startTime;
+        const percent = Math.min((elapsed / SLIDE_DURATION) * 100, 100);
+        filler.style.width = percent + '%';
+        
+        if (percent < 100 && isAutoplayOn) {
+          fillAnimationId = requestAnimationFrame(updateFill);
+        } else if (percent >= 100 && isAutoplayOn) {
+          goToNextSlide();
+        }
+      }
+      
+      fillAnimationId = requestAnimationFrame(updateFill);
+    }
+
+    function goToNextSlide() {
+      if (currentSlide < slidesData.length - 1) {
+        showSlide(currentSlide + 1);
+      } else {
+        pauseAutoplay();
+      }
+    }
+
+    function startAutoplay() {
+      if (isAutoplayOn) return;
+      isAutoplayOn = true;
+      toggleBtn.textContent = '⏸️';
+      startFillForCurrent();
+    }
+
+    function pauseAutoplay() {
+      isAutoplayOn = false;
+      stopFillAnimation();
+      toggleBtn.textContent = '▶️';
+    }
+
+    function toggleAutoplay() {
+      if (isAutoplayOn) {
+        pauseAutoplay();
+      } else {
+        startAutoplay();
+      }
+    }
+
+    // ========== ÉVÉNEMENTS ==========
+    // Ouverture de l'enveloppe
+    envelope3d.addEventListener('click', function(e) {
+      if (!envelope3d.classList.contains('opened')) {
+        envelope3d.classList.add('opened');
+        setTimeout(() => {
+          startAutoplay();
+        }, 1200);
+      }
+    });
+
+    // Empêcher la propagation depuis la carte intérieure
+    document.getElementById('innerCard').addEventListener('click', function(e) {
+      if (envelope3d.classList.contains('opened')) {
+        e.stopPropagation();
+      }
+    });
+
+    // Navigation
+    prevBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (currentSlide > 0) showSlide(currentSlide - 1);
+    });
+    nextBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (currentSlide < slidesData.length - 1) showSlide(currentSlide + 1);
+    });
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleAutoplay();
+    });
+
+    // Clavier
+    document.addEventListener('keydown', (e) => {
+      if (!envelope3d.classList.contains('opened')) return;
+      if (e.key === 'ArrowRight') {
+        if (currentSlide < slidesData.length - 1) showSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft') {
+        if (currentSlide > 0) showSlide(currentSlide - 1);
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        toggleAutoplay();
+      }
+    });
+
+    // Swipe tactile
+    let touchStartX = 0;
+    slidesViewport.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    slidesViewport.addEventListener('touchend', (e) => {
+      const diff = touchStartX - e.changedTouches[0].screenX;
+      if (Math.abs(diff) > 45) {
+        if (diff > 0 && currentSlide < slidesData.length - 1) {
+          showSlide(currentSlide + 1);
+        } else if (diff < 0 && currentSlide > 0) {
+          showSlide(currentSlide - 1);
+        }
+      }
+    });
+
+    // ========== FORMULAIRE RSVP ==========
+    slidesViewport.addEventListener('click', function(e) {
+      if (e.target.id === 'rsvpSubmitBtn') {
+        e.preventDefault();
+        const name = document.getElementById('rsvpName')?.value.trim();
+        const email = document.getElementById('rsvpEmail')?.value.trim();
+        const attendance = document.getElementById('rsvpAttendance')?.value;
+        
+        if (!name || !email || !attendance) {
+          alert('Merci de remplir votre nom, email et votre présence 🌸');
+          return;
+        }
+        
+        console.log('RSVP envoyé:', { name, email, attendance });
+        
+        const formContainer = document.querySelector('.rsvp-form-container');
+        const thankYou = document.getElementById('thankYouMsg');
+        const submitBtn = document.getElementById('rsvpSubmitBtn');
+        if (submitBtn) submitBtn.style.display = 'none';
+        if (thankYou) thankYou.classList.add('show');
+        
+        pauseAutoplay();
+      }
+    });
+
+    // ========== INITIALISATION ==========
+    showSlide(0);
+  })();
+</script>
+</body>
+</html>

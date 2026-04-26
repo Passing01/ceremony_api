@@ -7,7 +7,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::prefix('builder')->name('builder.')->group(function () {
+Route::group(['prefix' => 'builder', 'as' => 'builder.'], function () {
     Route::get('/', [TemplateBuilderController::class, 'index'])->name('index');
     Route::get('/edit/{id}', [TemplateBuilderController::class, 'edit'])->name('edit');
     Route::post('/save', [TemplateBuilderController::class, 'save'])->name('save');

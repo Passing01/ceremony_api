@@ -158,46 +158,115 @@ class TemplateBuilderController extends Controller
     public function guestInvitation($token)
     {
         $guest = \App\Models\Guest::where('invitation_token', $token)->firstOrFail();
-        $event = $guest->event;
+        $event  = $guest->event;
+        $template = $event->template;
 
-        // Récupérer le HTML personnalisé stocké lors de la création
-        $html = $event->custom_data['html_content'] ?? null;
+        // Charger le fichier HTML du template
+        $filename = $template->config_schema['file'] ?? "invitation{$template->id}.html";
+        $path = resource_path("views/templates/{$filename}");
 
-        if (!$html) {
-            // Fallback sur le template original si pas de contenu personnalisé
-            $template = $event->template;
-            $filename = $template->config_schema['file'];
-            $html = File::get(resource_path("views/templates/{$filename}"));
+        if (!File::exists($path)) {
+            abort(404, "Template file not found: {$filename}");
         }
 
-        // Injection du token pour le RSVP
-        $injection = "<script>window.guestToken = '{$token}';</script>";
-
-        // Injection des données personnalisées
+        $html = File::get($path);
         $customData = $event->custom_data ?? [];
-        $sections = $event->template->config_schema['sections'] ?? [];
+        $sections   = $template->config_schema['sections'] ?? [];
+
+        // ============================================================
+        // 1. Construire le tableau JS ordonné à partir des sections
+        //    (merge des valeurs par défaut + données personnalisées)
+        // ============================================================
         $dataArray = [];
         foreach ($sections as $section) {
             $sectionId = $section['id'];
-            if (isset($customData[$sectionId])) {
-                $dataArray[] = $customData[$sectionId];
-            }
-        }
-        $jsonDetails = json_encode($dataArray);
-        $injection .= "<script>window.chaptersData = {$jsonDetails}; window.slidesData = {$jsonDetails}; if(window.showChapter) window.showChapter(0); if(window.showSlide) window.showSlide(0);</script>";
+            if (!isset($customData[$sectionId])) continue;
 
-        // Remplacements pour template 1
-        foreach ($customData as $sectionId => $fields) {
-            if (is_array($fields)) {
-                foreach ($fields as $key => $value) {
-                    if (is_string($value)) {
-                        $html = str_replace("{{{$sectionId}.{$key}}}", $value, $html);
-                    }
+            $defaults = [];
+            foreach ($section['fields'] ?? [] as $field) {
+                $defaults[$field['id']] = $field['default'] ?? '';
+            }
+            $dataArray[] = array_merge($defaults, $customData[$sectionId]);
+        }
+
+        // ============================================================
+        // 2. Remplacement DIRECT dans le source HTML :
+        //    const chaptersData = [...] → données personnalisées
+        //    const slidesData   = [...] → données personnalisées
+        //    Cela fonctionne car les templates utilisent des `const`
+        //    locales et non des variables window.
+        // ============================================================
+        if (!empty($dataArray)) {
+            $jsonData = json_encode($dataArray, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+
+            // invitation2.html → const chaptersData
+            $html = preg_replace(
+                '/const\s+chaptersData\s*=\s*\[.*?\];/s',
+                'const chaptersData = ' . $jsonData . ';',
+                $html
+            );
+
+            // invitation3.html → const slidesData
+            $html = preg_replace(
+                '/const\s+slidesData\s*=\s*\[.*?\];/s',
+                'const slidesData = ' . $jsonData . ';',
+                $html
+            );
+        }
+
+        // ============================================================
+        // 3. Pour invitation1 (HTML statique) : remplacer les éléments
+        //    DOM directement via un script DOMContentLoaded
+        // ============================================================
+        $envData     = $customData['envelope'] ?? [];
+        $evDetails   = $customData['event_details'] ?? [];
+
+        $domReplacements = json_encode([
+            'envelope'     => $envData,
+            'event_details' => $evDetails,
+        ], JSON_UNESCAPED_UNICODE);
+
+        // ============================================================
+        // 4. Injection du token RSVP + données globales dans <head>
+        // ============================================================
+        $headScript = "<script>
+            window.guestToken = '{$token}';
+            window.eventData  = {$domReplacements};
+        </script>";
+        $html = preg_replace('/<head([^>]*)>/i', '<head$1>' . $headScript, $html, 1);
+
+        // ============================================================
+        // 5. Script DOM pour invitation1 (remplacement des textes visibles)
+        // ============================================================
+        $domScript = "<script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var d = window.eventData || {};
+                var env = d.envelope || {};
+                var ev  = d.event_details || {};
+
+                function setText(selectors, value) {
+                    if (!value) return;
+                    selectors.split(',').forEach(function(sel) {
+                        var el = document.querySelector(sel.trim());
+                        if (el) el.textContent = value;
+                    });
                 }
-            }
-        }
+                function setHTML(selectors, value) {
+                    if (!value) return;
+                    selectors.split(',').forEach(function(sel) {
+                        var el = document.querySelector(sel.trim());
+                        if (el) el.innerHTML = value;
+                    });
+                }
 
-        $html = str_replace('</body>', $injection . '</body>', $html);
+                setHTML('.couple-names, .names, .hero-names', env.names || env.front_text);
+                setText('.invitation-subtitle, .subtitle, .hero-subtitle', env.subtitle);
+                setText('.event-date, .date-main, .save-date-date', ev.date);
+                setText('.event-location, .lieu-nom, .location-name', ev.location);
+                setText('.event-title, .hero-title, .section-title', ev.title);
+            });
+        </script>";
+        $html = str_replace('</body>', $domScript . '</body>', $html);
 
         return response($html)->header('Content-Type', 'text/html');
     }

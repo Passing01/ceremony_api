@@ -151,4 +151,29 @@ class TemplateBuilderController extends Controller
 
         return response()->json(['message' => 'Événement créé avec succès', 'redirect' => '/']);
     }
+
+    /**
+     * Vue publique pour l'invité (Lien WhatsApp)
+     */
+    public function guestInvitation($token)
+    {
+        $guest = \App\Models\Guest::where('invitation_token', $token)->firstOrFail();
+        $event = $guest->event;
+
+        // Récupérer le HTML personnalisé stocké lors de la création
+        $html = $event->custom_data['html_content'] ?? null;
+
+        if (!$html) {
+            // Fallback sur le template original si pas de contenu personnalisé
+            $template = $event->template;
+            $filename = $template->config_schema['file'];
+            $html = File::get(resource_path("views/templates/{$filename}"));
+        }
+
+        // Injection du token pour le RSVP
+        $injection = "<script>window.guestToken = '{$token}';</script>";
+        $html = str_replace('</body>', $injection . '</body>', $html);
+
+        return response($html)->header('Content-Type', 'text/html');
+    }
 }

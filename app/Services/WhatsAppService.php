@@ -7,41 +7,51 @@ use Illuminate\Support\Facades\Log;
 
 class WhatsAppService
 {
-    protected string $baseUrl;
+    protected string $instanceId;
     protected string $token;
-    protected string $phoneNumberId;
+    protected string $baseUrl;
 
     public function __construct()
     {
-        // En prod ces valeurs viendraient du config / .env
-        $this->baseUrl = 'https://graph.facebook.com/v18.0';
-        $this->token = config('services.whatsapp.token', 'placeholder_token');
-        $this->phoneNumberId = config('services.whatsapp.phone_number_id', 'placeholder_id');
+        $this->instanceId = config('services.ultramsg.instance_id', 'instance1234');
+        $this->token = config('services.ultramsg.token', 'token1234');
+        $this->baseUrl = "https://api.ultramsg.com/{$this->instanceId}";
     }
 
-    public function sendTemplateMessage(string $to, string $templateName, string $languageCode = 'fr', array $components = [])
+    /**
+     * Envoi d'un message simple via UltraMsg
+     */
+    public function sendMessage(string $to, string $message)
     {
-        // Integration stub for Meta Cloud API
-        $url = "{$this->baseUrl}/{$this->phoneNumberId}/messages";
+        $url = "{$this->baseUrl}/messages/chat";
 
-        // Simulate API call
-        Log::info("Sending WhatsApp to {$to} using template {$templateName}", ['components' => $components]);
+        try {
+            $response = Http::post($url, [
+                'token' => $this->token,
+                'to' => $this->formatPhoneNumber($to),
+                'body' => $message,
+                'priority' => 10
+            ]);
 
-        /* 
-        $response = Http::withToken($this->token)->post($url, [
-            'messaging_product' => 'whatsapp',
-            'to' => $to,
-            'type' => 'template',
-            'template' => [
-                'name' => $templateName,
-                'language' => ['code' => $languageCode],
-                'components' => $components
-            ]
-        ]);
-        
-        return $response->json();
-        */
-        
-        return ['status' => 'success', 'message_id' => 'wamid.' . uniqid()];
+            if ($response->successful()) {
+                Log::info("Message WhatsApp envoyé avec succès à {$to}");
+                return $response->json();
+            }
+
+            Log::error("Échec de l'envoi WhatsApp à {$to}", ['response' => $response->body()]);
+            return false;
+        } catch (\Exception $e) {
+            Log::error("Erreur lors de l'appel à UltraMsg : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Formater le numéro pour UltraMsg (doit inclure le code pays sans le +)
+     */
+    private function formatPhoneNumber(string $phone)
+    {
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        return $phone;
     }
 }

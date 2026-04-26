@@ -14,3 +14,6 @@ Route::group(['prefix' => 'builder', 'as' => 'builder.'], function () {
     Route::get('/setup', [TemplateBuilderController::class, 'setup'])->name('setup');
     Route::post('/store', [TemplateBuilderController::class, 'store'])->name('store');
 });
+
+// Route publique pour les invités
+Route::get('/invitation/{token}', [TemplateBuilderController::class, 'guestInvitation'])->name('invitation');

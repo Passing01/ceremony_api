@@ -32,29 +32,22 @@ class SendWhatsAppInvite implements ShouldQueue
     {
         $event = $this->guest->event;
 
-        // Construct message components
-        $invitationLink = url('/invitation/' . $this->guest->invitation_token); // Or short_link if implemented
-        $customMessage = $event->invitation_text ?? 'Vous êtes invité !';
+        // Construction du lien d'invitation (Lien vers le preview public du slug)
+        $invitationLink = "https://ce.kgslab.com/invitation/" . $this->guest->invitation_token;
+        
+        $message = "✨ *Invitation : {$event->title}* ✨\n\n";
+        $message .= ($event->invitation_text ?? "Vous êtes cordialement invité à notre événement !") . "\n\n";
+        $message .= "👉 Voir mon invitation personnalisée : {$invitationLink}\n\n";
+        $message .= "Nous avons hâte de vous voir !";
 
-        $components = [
-            [
-                'type' => 'body',
-                'parameters' => [
-                    ['type' => 'text', 'text' => $event->title],
-                    ['type' => 'text', 'text' => $invitationLink],
-                    ['type' => 'text', 'text' => $customMessage],
-                ]
-            ]
-        ];
-
-        // Send
-        $whatsappService->sendTemplateMessage(
+        // Envoi via UltraMsg
+        $result = $whatsappService->sendMessage(
             $this->guest->whatsapp_number,
-            'ceremony_invite_v1',
-            'fr',
-            $components
+            $message
         );
 
-        $this->guest->update(['status' => 'sent']);
+        if ($result) {
+            $this->guest->update(['status' => 'sent']);
+        }
     }
 }

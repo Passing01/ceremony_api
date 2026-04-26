@@ -37,15 +37,7 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
-        return response()->json(['debug' => 'reached_controller'], 200);
-        
-        \Illuminate\Support\Facades\Log::info('EventController@store hit', [
-            'user_id' => $request->user()?->id,
-            'template_id' => $request->template_id,
-            'all_data' => $request->all()
-        ]);
-
-        $validTemplates = [1, 2, 3, 4, 5]; // IDs valides
+        $validTemplates = [1, 2, 3, 4, 5];
 
         $validated = $request->validate([
             'template_id' => [
@@ -68,6 +60,8 @@ class EventController extends Controller
             'invitation_text' => 'nullable|string|max:1000',
             'track_id' => 'nullable|uuid|exists:tracks,id',
         ]);
+
+        return response()->json(['debug' => 'reached_after_validation'], 200);
 
         $user = $request->user();
 

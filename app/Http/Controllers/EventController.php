@@ -125,11 +125,19 @@ class EventController extends Controller
                 // Extract core data
                 $title = $processedInput['title'] ?? $request->title ?? 'Sans titre';
                 $invitationText = $processedInput['invitation_text'] ?? $request->invitation_text ?? '';
-                $customData = $processedInput['data'] ?? [];
                 
-                // Explicitly handle cover_image if present at root
+                // Flutter data often has a double 'data' nesting: $processedInput['data']['data']
+                $customData = $processedInput['data'] ?? [];
+                if (isset($customData['data']) && is_array($customData['data'])) {
+                    $customData = $customData['data'];
+                }
+                
+                // Explicitly handle cover_image if present at any root
                 if (isset($processedInput['cover_image'])) {
                     $customData['cover_image'] = $processedInput['cover_image'];
+                }
+                if (isset($processedInput['data']['cover_image'])) {
+                    $customData['cover_image'] = $processedInput['data']['cover_image'];
                 }
 
                 $eventDate = $request->input('event_date') ?? now();

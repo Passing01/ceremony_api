@@ -175,7 +175,6 @@ class TemplateBuilderController extends Controller
 
         // ============================================================
         // 1. Construire le tableau JS ordonné à partir des sections
-        //    (merge des valeurs par défaut + données personnalisées)
         // ============================================================
         $dataArray = [];
         foreach ($sections as $section) {
@@ -190,40 +189,29 @@ class TemplateBuilderController extends Controller
         }
 
         // ============================================================
-        // 2. Remplacement DIRECT dans le source HTML :
-        //    const chaptersData = [...] → données personnalisées
-        //    const slidesData   = [...] → données personnalisées
-        //    Cela fonctionne car les templates utilisent des `const`
-        //    locales et non des variables window.
+        // 2. Remplacement DIRECT dans le source HTML (Templates JS)
         // ============================================================
         if (!empty($dataArray)) {
             $jsonData = json_encode($dataArray, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-
-            // invitation2.html → const chaptersData
-            $html = preg_replace(
-                '/const\s+chaptersData\s*=\s*\[.*?\];/s',
-                'const chaptersData = ' . $jsonData . ';',
-                $html
-            );
-
-            // invitation3.html → const slidesData
-            $html = preg_replace(
-                '/const\s+slidesData\s*=\s*\[.*?\];/s',
-                'const slidesData = ' . $jsonData . ';',
-                $html
-            );
+            $html = preg_replace('/const\s+chaptersData\s*=\s*\[.*?\];/s', 'const chaptersData = ' . $jsonData . ';', $html);
+            $html = preg_replace('/const\s+slidesData\s*=\s*\[.*?\];/s', 'const slidesData = ' . $jsonData . ';', $html);
         }
 
-        // ============================================================
-        // 3. Pour invitation1 (HTML statique) : remplacer les éléments
-        //    DOM directement via un script DOMContentLoaded
-        // ============================================================
-        $envData     = $customData['envelope'] ?? [];
-        $evDetails   = $customData['event_details'] ?? [];
+        // Synchroniser la date du compte à rebours
+        $weddingDate = $event->event_date ? $event->event_date->format('Y-m-dT19:00:00') : '2026-09-12T19:00:00';
+        $html = preg_replace('/new Date\([\'"].*?[\'"]\)/', "new Date('{$weddingDate}')", $html);
 
+        // ============================================================
+        // 3. Préparation des données globales
+        // ============================================================
         $domReplacements = json_encode([
-            'envelope'     => $envData,
-            'event_details' => $evDetails,
+            'hero'          => $customData['hero'] ?? $customData['intro'] ?? [],
+            'intro'         => $customData['intro'] ?? $customData['envelope'] ?? [],
+            'envelope'      => $customData['envelope'] ?? [],
+            'event_details' => $customData['event_details'] ?? [],
+            'location_civile' => $customData['location_civile'] ?? [],
+            'location_reception' => $customData['location_reception'] ?? [],
+            'dresscode'     => $customData['dresscode'] ?? [],
         ], JSON_UNESCAPED_UNICODE);
 
         // ============================================================
@@ -236,14 +224,12 @@ class TemplateBuilderController extends Controller
         $html = preg_replace('/<head([^>]*)>/i', '<head$1>' . $headScript, $html, 1);
 
         // ============================================================
-        // 5. Script DOM pour invitation1 (remplacement des textes visibles)
+        // 5. Script DOM Intelligent pour templates statiques (1, 4, 5)
         // ============================================================
         $domScript = "<script>
             document.addEventListener('DOMContentLoaded', function() {
                 var d = window.eventData || {};
-                var env = d.envelope || {};
-                var ev  = d.event_details || {};
-
+                
                 function setText(selectors, value) {
                     if (!value) return;
                     selectors.split(',').forEach(function(sel) {
@@ -251,19 +237,63 @@ class TemplateBuilderController extends Controller
                         if (el) el.textContent = value;
                     });
                 }
-                function setHTML(selectors, value) {
-                    if (!value) return;
+
+                function setMedia(containerSelector, mediaUrl) {
+                    if (!mediaUrl) return;
+                    var container = document.querySelector(containerSelector);
+                    if (!container) return;
+                    
+                    var isVideo = /\.(mp4|webm|mov|ogg)/i.test(mediaUrl);
+                    if (isVideo) {
+                        container.innerHTML = '<video src=\"' + mediaUrl + '\" autoplay muted loop playsinline style=\"width:100%; height:100%; object-fit:cover;\"></video>';
+                    } else {
+                        container.innerHTML = '<img src=\"' + mediaUrl + '\" style=\"width:100%; height:100%; object-fit:cover;\">';
+                    }
+                }
+
+                // Noms avec préservation du style '&'
+                var names = d.intro.names || d.envelope.names || d.envelope.front_text;
+                if (names) {
+                    var parts = names.split('&');
+                    var selectors = '.names, .couple-names, .hero-names';
                     selectors.split(',').forEach(function(sel) {
                         var el = document.querySelector(sel.trim());
-                        if (el) el.innerHTML = value;
+                        if (!el) return;
+                        if (parts.length === 2) {
+                            var etClass = el.querySelector('.et, .ampersand') ? (el.querySelector('.et') ? 'et' : 'ampersand') : 'et';
+                            el.innerHTML = parts[0].trim() + ' <span class=\"' + etClass + '\">&</span> ' + parts[1].trim();
+                        } else {
+                            el.textContent = names;
+                        }
                     });
                 }
 
-                setHTML('.couple-names, .names, .hero-names', env.names || env.front_text);
-                setText('.invitation-subtitle, .subtitle, .hero-subtitle', env.subtitle);
-                setText('.event-date, .date-main, .save-date-date', ev.date);
-                setText('.event-location, .lieu-nom, .location-name', ev.location);
-                setText('.event-title, .hero-title, .section-title', ev.title);
+                // Médias
+                setMedia('.hero-section, .hero-media', d.hero.media || d.hero.mediaSrc);
+                setMedia('.card-lieu:nth-of-type(1) .lieu-media', d.location_civile.media);
+                setMedia('.card-lieu:nth-of-type(2) .lieu-media', d.location_reception.media);
+
+                // Textes
+                setText('.invitation-text, .card-invite p:first-child', d.event_details.text);
+                setText('.quote, .quote-text, .card-invite .quote', d.event_details.quote || d.event_details.story);
+                setText('.save-date-date, .date-time', d.event_details.date);
+                setText('.lieu-nom', d.event_details.location);
+                
+                // Détails spécifiques (Template 5)
+                var civ = d.location_civile || {};
+                var rec = d.location_reception || {};
+                var elCiv = document.querySelectorAll('.card-lieu')[0];
+                if(elCiv && civ.name) {
+                    elCiv.querySelector('.lieu-nom').textContent = civ.name;
+                    elCiv.querySelector('.lieu-adresse').textContent = civ.address;
+                    elCiv.querySelector('.lieu-type').textContent = civ.title;
+                }
+                var elRec = document.querySelectorAll('.card-lieu')[1];
+                if(elRec && rec.name) {
+                    elRec.querySelector('.lieu-nom').textContent = rec.name;
+                    elRec.querySelector('.lieu-adresse').textContent = rec.address;
+                    elRec.querySelector('.lieu-type').textContent = rec.title;
+                }
             });
         </script>";
         $html = str_replace('</body>', $domScript . '</body>', $html);

@@ -103,25 +103,29 @@ class EventController extends Controller
                 $customData = $request->input('data', []);
                 if (is_string($customData)) $customData = json_decode($customData, true) ?? [];
 
-                // 2. Traiter les fichiers spécifiquement dans 'data'
                 $processFiles = function ($array, $prefix = 'data') use (&$processFiles, $request) {
                     $result = [];
                     if (!is_array($array)) return $result;
                     foreach ($array as $key => $value) {
                         $fullKey = "{$prefix}.{$key}";
-                        $file = $request->file($fullKey);
-                        if ($file) {
-                            $getActualFile = function($f) use (&$getActualFile) {
-                                if ($f instanceof \Illuminate\Http\UploadedFile) return $f;
-                                if (is_array($f)) return $getActualFile(reset($f));
-                                return null;
-                            };
-                            $actualFile = $getActualFile($file);
-                            $result[$key] = $actualFile ? $actualFile->store('events/media', 'public') : $value;
-                        } elseif (is_array($value)) {
+                        
+                        // Si c'est un tableau (comme ch1, ch2), on descend dedans D'ABORD
+                        if (is_array($value)) {
                             $result[$key] = $processFiles($value, $fullKey);
                         } else {
-                            $result[$key] = $value;
+                            // Sinon on regarde si c'est un fichier
+                            $file = $request->file($fullKey);
+                            if ($file) {
+                                $getActualFile = function($f) use (&$getActualFile) {
+                                    if ($f instanceof \Illuminate\Http\UploadedFile) return $f;
+                                    if (is_array($f)) return $getActualFile(reset($f));
+                                    return null;
+                                };
+                                $actualFile = $getActualFile($file);
+                                $result[$key] = $actualFile ? $actualFile->store('events/media', 'public') : $value;
+                            } else {
+                                $result[$key] = $value;
+                            }
                         }
                     }
                     return $result;

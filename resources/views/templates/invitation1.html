@@ -396,7 +396,9 @@
     <script>
         (function () {
             // CETTE LIGNE EST INDISPENSABLE POUR L'INJECTION DU SERVEUR
-            const chaptersData = [];
+            if (typeof chaptersData === 'undefined') {
+                var chaptersData = [];
+            }
 
             // ========== FONCTION D'INITIALISATION ==========
             function initInvitation() {

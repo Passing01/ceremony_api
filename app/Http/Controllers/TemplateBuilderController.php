@@ -272,45 +272,32 @@ class TemplateBuilderController extends Controller
         ], JSON_UNESCAPED_UNICODE);
 
         // ============================================================
-        // 4. Injection du token RSVP + données globales dans <head>
+        // 4. Injection ULTIME (Au tout début du fichier)
         // ============================================================
-        $baseUrl = url('/');
-        $headScript = "<script>
-            window.guestToken = '{$token}';
-            window.eventData  = {$domReplacements};
-            window.apiBaseUrl = '{$baseUrl}';
-        </script>";
-        $html = preg_replace('/<head([^>]*)>/i', '<head$1>' . $headScript, $html, 1);
-        
-        \Illuminate\Support\Facades\Log::info('GLOBAL DATA INJECTED', [
-            'chapters_in_data' => count($sliderChapters ?? [])
-        ]);
-        
-        // 4. Injection du Slider (Cible le commentaire indispensable)
         $sliderChapters = array_values(array_filter($dataArray, function($item) {
             return isset($item['number']) || isset($item['title']) || isset($item['text']);
         }));
-        $chaptersJson = json_encode($sliderChapters, JSON_UNESCAPED_UNICODE);
         
-        $marker = '// CETTE LIGNE EST INDISPENSABLE POUR L' . 'INJECTION DU SERVEUR';
-        $pos = strpos($html, $marker);
-        
-        \Illuminate\Support\Facades\Log::info('INJECTION DEBUG', [
-            'marker_found' => ($pos !== false),
-            'html_context' => ($pos !== false) ? substr($html, $pos, 100) : 'NOT FOUND'
+        \Illuminate\Support\Facades\Log::info('DIAGNOSTIC FINAL', [
+            'event_id' => $event->id,
+            'custom_data_keys' => array_keys($customData),
+            'dataArray_count' => count($dataArray),
+            'slider_chapters_count' => count($sliderChapters)
         ]);
 
-        if ($pos !== false) {
-            // On injecte juste après le commentaire
-            $injection = "\n            const chaptersData = $chaptersJson;";
-            $html = substr_replace($html, $injection, $pos + strlen($marker), 0);
-            $count = 1;
-        } else {
-            // Fallback ultime au cas où le commentaire a été modifié
-            $html = preg_replace('/chaptersData\s*=\s*\[\s*\]/', "chaptersData = $chaptersJson", $html, -1, $count);
-        }
+        $baseUrl = url('/');
+        $finalJson = json_encode([
+            'token' => $token,
+            'event' => $domReplacements, // contient hero, intro, etc.
+            'chapters' => $prefixStorage($sliderChapters),
+            'apiBaseUrl' => $baseUrl
+        ], JSON_UNESCAPED_UNICODE);
+
+        // Injection au tout début pour être 100% sûr
+        $injectionScript = "<script>window.eventData = {$finalJson}; window.chaptersData = window.eventData.chapters;</script>";
+        $html = $injectionScript . $html;
         
-        \Illuminate\Support\Facades\Log::info('INJECTION RESULT', ['replacements' => $count]);
+        \Illuminate\Support\Facades\Log::info('INJECTION SUCCESSFUL AT TOP');
 
         // ============================================================
         // 5. Script DOM Intelligent pour templates statiques (1, 4, 5)

@@ -197,7 +197,15 @@ class TemplateBuilderController extends Controller
             }
 
             if (isset($customData[$sectionId])) {
-                $dataArray[] = $prefixStorage(array_merge($defaults, $customData[$sectionId]));
+                $sectionData = $customData[$sectionId];
+                // Sécurité : s'assurer que c'est un tableau
+                if (is_string($sectionData)) {
+                    $sectionData = json_decode($sectionData, true) ?? [];
+                }
+                if (!is_array($sectionData)) {
+                    $sectionData = [];
+                }
+                $dataArray[] = $prefixStorage(array_merge($defaults, $sectionData));
             } else {
                 // Fallback intelligent
                 $fallbackData = $defaults;

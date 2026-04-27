@@ -281,27 +281,28 @@ class TemplateBuilderController extends Controller
         </script>";
         $html = preg_replace('/<head([^>]*)>/i', '<head$1>' . $headScript, $html, 1);
         
-        // 4. Injecter Chapters pour Template 1 et 2 (Injection ultra-robuste)
-        // On ne garde que les chapitres (ch1, ch2...) pour le slider, pas l'enveloppe
+        // 4. Injection du Slider (Cible le commentaire indispensable)
         $sliderChapters = array_values(array_filter($dataArray, function($item) {
             return isset($item['number']) || isset($item['title']) || isset($item['text']);
         }));
-        
         $chaptersJson = json_encode($sliderChapters, JSON_UNESCAPED_UNICODE);
         
+        $marker = '// CETTE LIGNE EST INDISPENSABLE POUR L' . 'INJECTION DU SERVEUR';
+        $pos = strpos($html, $marker);
+        
         \Illuminate\Support\Facades\Log::info('INJECTION DEBUG', [
-            'total_items' => count($dataArray),
-            'slider_chapters' => count($sliderChapters),
-            'placeholder_check' => str_contains($html, 'chaptersData')
+            'marker_found' => ($pos !== false),
+            'html_context' => ($pos !== false) ? substr($html, $pos, 100) : 'NOT FOUND'
         ]);
 
-        // Regex très large pour attraper toutes les variantes : const/var/let chaptersData = [];
-        $pattern = '/(const|var|let)\s+chaptersData\s*=\s*\[\s*\]\s*;?/';
-        $html = preg_replace($pattern, "const chaptersData = $chaptersJson;", $html, -1, $count);
-        
-        // Si le regex échoue encore, on tente un remplacement de texte brut direct
-        if ($count === 0) {
-            $html = str_replace('const chaptersData = [];', "const chaptersData = $chaptersJson;", $html);
+        if ($pos !== false) {
+            // On injecte juste après le commentaire
+            $injection = "\n            const chaptersData = $chaptersJson;";
+            $html = substr_replace($html, $injection, $pos + strlen($marker), 0);
+            $count = 1;
+        } else {
+            // Fallback ultime au cas où le commentaire a été modifié
+            $html = preg_replace('/chaptersData\s*=\s*\[\s*\]/', "chaptersData = $chaptersJson", $html, -1, $count);
         }
         
         \Illuminate\Support\Facades\Log::info('INJECTION RESULT', ['replacements' => $count]);

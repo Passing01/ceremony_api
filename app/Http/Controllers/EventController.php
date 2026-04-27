@@ -146,6 +146,14 @@ class EventController extends Controller
 
                 $processedInput = $processFiles($allInput);
                 $customData = $processedInput['data'] ?? [];
+                
+                // Sécurité : forcer customData en tableau
+                if (is_string($customData)) {
+                    $customData = json_decode($customData, true) ?? [];
+                }
+                if (!is_array($customData)) {
+                    $customData = [];
+                }
 
                 // Si double nesting data.data
                 if (isset($customData['data']) && is_array($customData['data'])) {
@@ -159,7 +167,7 @@ class EventController extends Controller
 
                 \Illuminate\Support\Facades\Log::info('FINAL CUSTOM DATA TO SAVE', [
                     'has_ch1' => isset($customData['ch1']),
-                    'keys' => array_keys($customData)
+                    'keys' => is_array($customData) ? array_keys($customData) : []
                 ]);
 
                 $event = Event::create([

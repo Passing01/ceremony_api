@@ -281,16 +281,28 @@ class TemplateBuilderController extends Controller
         </script>";
         $html = preg_replace('/<head([^>]*)>/i', '<head$1>' . $headScript, $html, 1);
         
-        // Injecter Chapters pour Template 1 et 2 (Injection robuste par Regex)
-        $chaptersJson = json_encode($dataArray, JSON_UNESCAPED_UNICODE);
+        // 4. Injecter Chapters pour Template 1 et 2 (Injection ultra-robuste)
+        // On ne garde que les chapitres (ch1, ch2...) pour le slider, pas l'enveloppe
+        $sliderChapters = array_values(array_filter($dataArray, function($item) {
+            return isset($item['number']) || isset($item['title']) || isset($item['text']);
+        }));
+        
+        $chaptersJson = json_encode($sliderChapters, JSON_UNESCAPED_UNICODE);
         
         \Illuminate\Support\Facades\Log::info('INJECTION DEBUG', [
-            'chapters_count' => count($dataArray),
-            'first_chapter_media' => $dataArray[0]['media'] ?? 'N/A',
-            'json_sample' => substr($chaptersJson, 0, 200) . '...'
+            'total_items' => count($dataArray),
+            'slider_chapters' => count($sliderChapters),
+            'placeholder_check' => str_contains($html, 'chaptersData')
         ]);
 
-        $html = preg_replace('/const chaptersData\s*=\s*\[\s*\]\s*;?/', "const chaptersData = $chaptersJson;", $html, -1, $count);
+        // Regex très large pour attraper toutes les variantes : const/var/let chaptersData = [];
+        $pattern = '/(const|var|let)\s+chaptersData\s*=\s*\[\s*\]\s*;?/';
+        $html = preg_replace($pattern, "const chaptersData = $chaptersJson;", $html, -1, $count);
+        
+        // Si le regex échoue encore, on tente un remplacement de texte brut direct
+        if ($count === 0) {
+            $html = str_replace('const chaptersData = [];', "const chaptersData = $chaptersJson;", $html);
+        }
         
         \Illuminate\Support\Facades\Log::info('INJECTION RESULT', ['replacements' => $count]);
 

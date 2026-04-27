@@ -188,6 +188,11 @@ class TemplateBuilderController extends Controller
         };
 
         $dataArray = [];
+        $mappedHero = [];
+        $mappedIntro = [];
+        $mappedEnvelope = [];
+        $mappedDetails = [];
+
         foreach ($sections as $section) {
             $sectionId = $section['id'];
             
@@ -196,23 +201,22 @@ class TemplateBuilderController extends Controller
                 $defaults[$field['id']] = $field['default'] ?? '';
             }
 
+            $finalData = $defaults;
             if (isset($customData[$sectionId])) {
                 $sectionData = $customData[$sectionId];
-                // Sécurité : s'assurer que c'est un tableau
-                if (is_string($sectionData)) {
-                    $sectionData = json_decode($sectionData, true) ?? [];
-                }
-                if (!is_array($sectionData)) {
-                    $sectionData = [];
-                }
-                $dataArray[] = $prefixStorage(array_merge($defaults, $sectionData));
-            } else {
-                // Fallback intelligent
-                $fallbackData = $defaults;
-                if ($sectionId === 'intro' || $sectionId === 'hero' || $sectionId === 'ch1') {
-                    $dataArray[] = $fallbackData;
+                if (is_string($sectionData)) $sectionData = json_decode($sectionData, true) ?? [];
+                if (is_array($sectionData)) {
+                    $finalData = array_merge($defaults, $sectionData);
                 }
             }
+
+            $dataArray[] = $prefixStorage($finalData);
+
+            // Capturer pour le DOM statique
+            if ($sectionId === 'hero') $mappedHero = $finalData;
+            if ($sectionId === 'intro') $mappedIntro = $finalData;
+            if ($sectionId === 'envelope') $mappedEnvelope = $finalData;
+            if ($sectionId === 'event_details') $mappedDetails = $finalData;
         }
 
         // Ajouter la section finale (RSVP / Célébration)

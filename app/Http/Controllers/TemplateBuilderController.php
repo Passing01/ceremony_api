@@ -259,7 +259,7 @@ class TemplateBuilderController extends Controller
         $domReplacements = json_encode([
             'hero'          => $prefixStorage($mappedHero),
             'intro'         => $prefixStorage($mappedIntro),
-            'envelope'      => $prefixStorage($mappedIntro),
+            'envelope'      => $prefixStorage($mappedEnvelope),
             'event_details' => $prefixStorage($mappedDetails),
             'location_civile' => $prefixStorage($raw['location_civile'] ?? []),
             'location_reception' => $prefixStorage($raw['location_reception'] ?? []),
@@ -279,19 +279,15 @@ class TemplateBuilderController extends Controller
         
         // Injecter Chapters pour Template 1 et 2 (Injection robuste par Regex)
         $chaptersJson = json_encode($dataArray, JSON_UNESCAPED_UNICODE);
-        $chaptersCount = count($dataArray);
         
         \Illuminate\Support\Facades\Log::info('INJECTION DEBUG', [
-            'chapters_count' => $chaptersCount,
+            'chapters_count' => count($dataArray),
             'placeholder_found' => str_contains($html, 'const chaptersData = [];'),
-            'template_id' => $event->template_id
         ]);
 
         $html = preg_replace('/const chaptersData\s*=\s*\[\s*\]\s*;?/', "const chaptersData = $chaptersJson;", $html, -1, $count);
         
-        \Illuminate\Support\Facades\Log::info('INJECTION RESULT', [
-            'replacements_made' => $count
-        ]);
+        \Illuminate\Support\Facades\Log::info('INJECTION RESULT', ['replacements' => $count]);
 
         // ============================================================
         // 5. Script DOM Intelligent pour templates statiques (1, 4, 5)

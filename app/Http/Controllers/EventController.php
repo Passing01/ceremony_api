@@ -138,9 +138,9 @@ class EventController extends Controller
                 $invitationText = $request->input('invitation_text') ?? $customData['invitation_text'] ?? '';
                 $eventDate = $request->input('event_date') ?? now();
 
-                \Illuminate\Support\Facades\Log::info('FINAL CUSTOM DATA TO SAVE', [
-                    'has_ch1' => isset($customData['ch1']),
-                    'keys' => is_array($customData) ? array_keys($customData) : []
+                \Illuminate\Support\Facades\Log::info('--- DATA ABOUT TO BE SAVED ---', [
+                    'custom_data' => $customData,
+                    'is_array' => is_array($customData)
                 ]);
 
                 $event = Event::create([

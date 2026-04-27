@@ -274,15 +274,15 @@ class TemplateBuilderController extends Controller
         // ============================================================
         // DEBUGGING MASSIF : VOIR TOUTE LA CHAÎNE DE DONNÉES
         // ============================================================
+        $sliderChapters = array_values(array_filter($dataArray, function($item) {
+            return isset($item['number']) || isset($item['title']) || isset($item['text']);
+        }));
+
         \Illuminate\Support\Facades\Log::info('--- DEBUG TEMPLATE START ---', [
             'event_id' => $event->id,
             'template_id' => $event->template_id,
             'raw_custom_data_from_db' => $customData
         ]);
-
-        $sliderChapters = array_values(array_filter($dataArray, function($item) {
-            return isset($item['number']) || isset($item['title']) || isset($item['text']);
-        }));
         
         \Illuminate\Support\Facades\Log::info('--- DEBUG MAPPING RESULT ---', [
             'dataArray_count' => count($dataArray),
@@ -298,12 +298,12 @@ class TemplateBuilderController extends Controller
             'apiBaseUrl' => $baseUrl
         ], JSON_UNESCAPED_UNICODE);
 
-        // Injection au tout début pour être 100% sûr
+        // Injection ULTIME au début du BODY
         $injectionScript = "<!-- DEBUG INJECTION --><script>window.eventData = {$finalJson}; window.chaptersData = window.eventData.chapters;</script>";
-        $html = $injectionScript . $html;
+        $html = preg_replace('/<body([^>]*)>/i', '<body$1>' . $injectionScript, $html, 1);
         
         \Illuminate\Support\Facades\Log::info('--- DEBUG FINAL HTML SAMPLE ---', [
-            'html_start' => substr($html, 0, 500)
+            'body_start' => substr($html, strpos($html, '<body'), 500)
         ]);
         \Illuminate\Support\Facades\Log::info('--- DEBUG TEMPLATE END ---');
 

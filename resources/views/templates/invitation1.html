@@ -1,20 +1,42 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Invitation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+    <title>Invitation Personnalisable</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;400&display=swap"
+        rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { width: 100%; height: 100%; overflow: hidden; background: #faf8f5; font-family: 'Cormorant Garamond', serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        .main-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #faf8f5;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         /* ENVELOPPE STYLE */
         .envelope-wrapper {
             position: absolute;
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             max-width: 500px;
             z-index: 100;
             display: flex;
@@ -23,215 +45,540 @@
             background: #faf8f5;
             transition: opacity 0.8s ease, visibility 0.8s;
         }
+
         .envelope {
             position: relative;
-            width: 90%; height: 70%;
+            width: 90%;
+            height: 70%;
             background: #f5f0e8;
             border-radius: 8px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             overflow: hidden;
             transform-style: preserve-3d;
         }
+
         .envelope-flap {
-            position: absolute; top: 0; left: 0; width: 100%; height: 60%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
             background: linear-gradient(180deg, #ede4d3 0%, #f2ecdd 100%);
             clip-path: polygon(0 0, 100% 0, 50% 100%);
-            z-index: 10; transition: transform 0.8s ease;
+            z-index: 10;
+            transition: transform 0.8s ease;
             transform-origin: top;
         }
-        .opened .envelope-flap { transform: rotateX(180deg); }
+
+        .opened .envelope-flap {
+            transform: rotateX(180deg);
+        }
+
         .envelope-seal {
-            position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
-            width: 60px; height: 60px; background: #d4af37; border-radius: 50%;
-            z-index: 11; display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: #d4af37;
+            border-radius: 50%;
+            z-index: 11;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             transition: opacity 0.5s;
         }
-        .opened .envelope-seal { opacity: 0; }
+
+        .opened .envelope-seal {
+            opacity: 0;
+        }
+
         .envelope-text {
-            position: absolute; bottom: 20%; left: 0; width: 100%;
-            text-align: center; color: #8b7a5e; font-size: 1.2rem; letter-spacing: 2px;
+            position: absolute;
+            bottom: 20%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #8b7a5e;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
         }
 
         /* CARD STYLE (FULL SCREEN) */
         .invitation-card {
-            width: 100%; height: 100%;
-            max-width: 500px; background: #fff;
-            position: relative; display: flex; flex-direction: column;
-            opacity: 0; visibility: hidden; transition: opacity 0.8s ease 0.4s;
+            width: 100%;
+            height: 100%;
+            max-width: 500px;
+            background: #fff;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease 0.4s;
         }
-        .show-card .invitation-card { opacity: 1; visibility: visible; }
-        .show-card .envelope-wrapper { opacity: 0; visibility: hidden; pointer-events: none; }
 
-        .progress-bar { display: flex; gap: 4px; padding: 10px 15px; z-index: 20; }
-        .segment { flex: 1; height: 3px; background: rgba(0,0,0,0.1); border-radius: 2px; overflow: hidden; position: relative; }
-        .segment-fill { position: absolute; top: 0; left: 0; height: 100%; background: #d4af37; width: 0%; }
-        .segment.done { background: #d4af37; }
+        .show-card .invitation-card {
+            opacity: 1;
+            visibility: visible;
+        }
 
-        .story-viewport { flex: 1; position: relative; overflow: hidden; }
-        .chapter { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; padding: 20px; text-align: center; }
-        .chapter.active { display: flex; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .show-card .envelope-wrapper {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
 
-        .chapter-header { font-family: 'Montserrat', sans-serif; font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase; color: #d4af37; margin: 20px 0 10px; }
-        .chapter h2 { font-size: 2.2rem; font-weight: 400; margin-bottom: 10px; color: #333; }
-        .chapter .text { font-size: 1.15rem; line-height: 1.5; color: #666; margin-bottom: 15px; }
-        .chapter .date { font-style: italic; color: #b59d5e; margin-bottom: 15px; }
-        .media-box { flex: 1; width: 100%; border-radius: 12px; overflow: hidden; background: #fdfcf8; }
-        .media-box img, .media-box video { width: 100%; height: 100%; object-fit: cover; }
+        .progress-bar {
+            display: flex;
+            gap: 4px;
+            padding: 10px 15px;
+            z-index: 20;
+        }
 
-        .nav-zones { position: absolute; top: 0; left: 0; width: 100%; height: 80%; display: flex; z-index: 15; }
-        .nav-left, .nav-right { flex: 1; cursor: pointer; }
+        .segment {
+            flex: 1;
+            height: 3px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
 
-        .rsvp-container { flex: 1; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; text-align: center; }
-        .rsvp-form { width: 100%; display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .rsvp-form input, .rsvp-form select, .rsvp-form textarea { padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 1rem; }
-        .rsvp-form button { background: #d4af37; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .segment-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: #d4af37;
+            width: 0%;
+        }
 
-        .bottom-nav { padding: 15px; display: flex; justify-content: center; gap: 15px; z-index: 30; }
-        .control-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #eee; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .segment.done {
+            background: #d4af37;
+        }
 
-        @media (max-width: 500px) { .invitation-card { max-width: none; } .envelope { height: 60%; } }
+        .story-viewport {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chapter {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .chapter.active {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .chapter-header {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #d4af37;
+            margin: 20px 0 10px;
+        }
+
+        .chapter h2 {
+            font-size: 2.2rem;
+            font-weight: 400;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .chapter .text {
+            font-size: 1.15rem;
+            line-height: 1.5;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .chapter .date {
+            font-style: italic;
+            color: #b59d5e;
+            margin-bottom: 15px;
+        }
+
+        .media-box {
+            flex: 1;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fdfcf8;
+        }
+
+        .media-box img,
+        .media-box video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .nav-zones {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80%;
+            display: flex;
+            z-index: 15;
+        }
+
+        .nav-left,
+        .nav-right {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .rsvp-container {
+            flex: 1;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .rsvp-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .rsvp-form input,
+        .rsvp-form select,
+        .rsvp-form textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .rsvp-form button {
+            background: #d4af37;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .bottom-nav {
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 30;
+        }
+
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid #eee;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Message d'erreur */
+        .error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff3f3;
+            color: #c53030;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            z-index: 200;
+        }
+
+        @media (max-width: 500px) {
+            .invitation-card {
+                max-width: none;
+            }
+
+            .envelope {
+                height: 60%;
+            }
+        }
     </style>
 </head>
+
 <body id="body">
 
-<div class="main-wrapper" id="mainWrapper">
-    <!-- ENVELOPPE -->
-    <div class="envelope-wrapper" id="envelopeWrapper">
-        <div class="envelope" id="envelope">
-            <div class="envelope-flap"></div>
-            <div class="envelope-seal" id="envelopeSeal">💌</div>
-            <div class="envelope-text" id="envelopeText">Invitation</div>
-        </div>
-    </div>
-
-    <!-- CARD -->
-    <div class="invitation-card">
-        <div class="progress-bar" id="progressBar"></div>
-        <div class="story-viewport">
-            <div class="nav-zones"><div class="nav-left" id="goPrev"></div><div class="nav-right" id="goNext"></div></div>
-            <div id="chaptersContainer" style="height: 100%;"></div>
-            
-            <div id="rsvpSection" class="rsvp-container" style="display:none;">
-                <div class="chapter-header">Célébration</div>
-                <h2 id="finalTitle">Chargement...</h2>
-                <p id="finalText" class="text"></p>
-                <div id="finalDate" class="date"></div>
-                <div id="finalLocation" style="font-weight:bold; color:#d4af37;"></div>
-                <form class="rsvp-form" id="rsvpForm">
-                    <input type="text" id="rsvpNom" placeholder="Votre nom" required>
-                    <select id="rsvpPresence" required><option value="">Serez-vous présent(e) ?</option><option value="confirmed">Je serai là !</option><option value="declined">Malheureusement non</option></select>
-                    <textarea id="rsvpMessage" placeholder="Un petit mot..." rows="2"></textarea>
-                    <button type="submit">Confirmer ✨</button>
-                </form>
-                <div id="rsvpMerci" style="display:none; padding:20px; color:#d4af37;">✅ Merci ! Votre réponse a été enregistrée.</div>
+    <div class="main-wrapper" id="mainWrapper">
+        <!-- ENVELOPPE -->
+        <div class="envelope-wrapper" id="envelopeWrapper">
+            <div class="envelope" id="envelope">
+                <div class="envelope-flap"></div>
+                <div class="envelope-seal" id="envelopeSeal">💌</div>
+                <div class="envelope-text" id="envelopeText">Invitation</div>
             </div>
         </div>
-        <div class="bottom-nav">
-            <div class="control-btn" id="btnPrev">←</div>
-            <div class="control-btn" id="btnPlay">⏸️</div>
-            <div class="control-btn" id="btnNext">→</div>
+
+        <!-- CARD -->
+        <div class="invitation-card">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="story-viewport" id="storyViewport">
+                <div class="nav-zones">
+                    <div class="nav-left" id="goPrev"></div>
+                    <div class="nav-right" id="goNext"></div>
+                </div>
+                <div id="chaptersContainer" style="height: 100%;"></div>
+
+                <div id="rsvpSection" class="rsvp-container" style="display:none;">
+                    <div class="chapter-header">Célébration</div>
+                    <h2 id="finalTitle">Chargement...</h2>
+                    <p id="finalText" class="text"></p>
+                    <div id="finalDate" class="date"></div>
+                    <div id="finalLocation" style="font-weight:bold; color:#d4af37;"></div>
+                    <form class="rsvp-form" id="rsvpForm">
+                        <input type="text" id="rsvpNom" placeholder="Votre nom" required>
+                        <select id="rsvpPresence" required>
+                            <option value="">Serez-vous présent(e) ?</option>
+                            <option value="confirmed">Je serai là !</option>
+                            <option value="declined">Malheureusement non</option>
+                        </select>
+                        <textarea id="rsvpMessage" placeholder="Un petit mot..." rows="2"></textarea>
+                        <button type="submit">Confirmer ✨</button>
+                    </form>
+                    <div id="rsvpMerci" style="display:none; padding:20px; color:#d4af37;">✅ Merci ! Votre réponse a été
+                        enregistrée.</div>
+                </div>
+            </div>
+            <div class="bottom-nav">
+                <div class="control-btn" id="btnPrev">←</div>
+                <div class="control-btn" id="btnPlay">⏸️</div>
+                <div class="control-btn" id="btnNext">→</div>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    (function() {
-        // Cette ligne est indispensable pour l'injection du serveur
-        const chaptersData = [];
+    <div class="error-message" id="errorMessage"></div>
 
-        // Fallback data si l'injection échoue
-        if (chaptersData.length === 0) {
-            window.chaptersData = [
-                { title: "Chargement...", text: "Veuillez patienter...", isFinal: false }
-            ];
-        } else {
-            window.chaptersData = chaptersData;
-        }
+    <script>
+        (function () {
+            // CETTE LIGNE EST INDISPENSABLE POUR L'INJECTION DU SERVEUR
+            const chaptersData = [];
 
-        const container = document.getElementById('chaptersContainer');
-        const progressBar = document.getElementById('progressBar');
-        const rsvpSection = document.getElementById('rsvpSection');
-        const storyChapters = chaptersData.filter(c => !c.isFinal);
-        const finalData = chaptersData.find(c => c.isFinal);
+            // ========== FONCTION D'INITIALISATION ==========
+            function initInvitation() {
+                try {
+                    // Utiliser chaptersData injecté par le serveur ou le fallback
+                    const chapters = (typeof chaptersData !== 'undefined' && chaptersData.length > 0) 
+                        ? chaptersData 
+                        : [
+                            { number: "Chapitre I", title: "Le premier regard", text: "C'était un soir d'automne...", date: "12 octobre 2020", media: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800" }
+                        ];
 
-        storyChapters.forEach((ch, i) => {
-            const seg = document.createElement('div'); seg.className = 'segment'; seg.innerHTML = '<div class="segment-fill"></div>'; progressBar.appendChild(seg);
-            const div = document.createElement('div'); div.className = 'chapter' + (i === 0 ? ' active' : '');
-            let media = '';
-            if (ch.media || ch.mediaSrc) {
-                const src = ch.media || ch.mediaSrc;
-                media = (/\.(mp4|webm|mov|ogg)/i.test(src)) ? `<div class="media-box"><video src="${src}" autoplay muted loop playsinline></video></div>` : `<div class="media-box"><img src="${src}"></div>`;
+                    const eventData = window.eventData || {};
+                    console.log('📋 Données chargées :', { chapters, eventData });
+
+                    // Appliquer la configuration de l'enveloppe
+                    if (eventData.envelope) {
+                        document.getElementById('envelopeText').textContent = eventData.envelope.front_text || 'Invitation';
+                        document.getElementById('envelopeSeal').textContent = eventData.envelope.seal || '💌';
+                    }
+
+                    const progressBar = document.getElementById('progressBar');
+                    const chaptersContainer = document.getElementById('chaptersContainer');
+                    progressBar.innerHTML = '';
+                    chaptersContainer.innerHTML = '';
+
+                    const storyChapters = chapters.filter(c => !c.isFinal);
+                    const finalChapter = chapters.find(c => c.isFinal);
+
+                    // Construire les chapitres
+                    storyChapters.forEach((ch, i) => {
+                        const seg = document.createElement('div');
+                        seg.className = 'segment';
+                        seg.innerHTML = '<div class="segment-fill"></div>';
+                        progressBar.appendChild(seg);
+
+                        const div = document.createElement('div');
+                        div.className = 'chapter' + (i === 0 ? ' active' : '');
+                        
+                        let mediaHTML = '';
+                        const src = ch.media || ch.mediaSrc;
+                        if (src) {
+                            const isVideo = /\.(mp4|webm|mov|ogg)/i.test(src);
+                            if (isVideo) {
+                                mediaHTML = `<div class="media-box"><video src="${src}" autoplay muted loop playsinline></video></div>`;
+                            } else {
+                                mediaHTML = `<div class="media-box"><img src="${src}" alt="${ch.title}"></div>`;
+                            }
+                        }
+
+                        div.innerHTML = `
+                            <div class="chapter-header">${ch.number || 'Chapitre ' + (i + 1)}</div>
+                            <h2>${ch.title || ''}</h2>
+                            <p class="text">${ch.text || ''}</p>
+                            ${ch.date ? `<div class="date">${ch.date}</div>` : ''}
+                            ${mediaHTML}
+                        `;
+                        chaptersContainer.appendChild(div);
+                    });
+
+                    // Chapitre final
+                    if (finalChapter) {
+                        document.getElementById('finalTitle').textContent = finalChapter.title || 'Nous nous marions !';
+                        document.getElementById('finalText').textContent = finalChapter.text || '';
+                        document.getElementById('finalDate').textContent = finalChapter.date || '';
+                        document.getElementById('finalLocation').textContent = finalChapter.location || '';
+                    }
+
+                    // Démarrer
+                    showChapter(0);
+
+                } catch (error) {
+                    console.error('❌ Erreur d\'initialisation:', error);
+                }
             }
-            div.innerHTML = `<div class="chapter-number">${ch.number || ('Chapitre ' + (i+1))}</div><h2>${ch.title || ''}</h2><p class="text">${ch.text || ''}</p><div class="date">${ch.date || ''}</div>${media}`;
-            container.appendChild(div);
-        });
 
-        if (finalData) {
-            document.getElementById('finalTitle').textContent = finalData.title || '';
-            document.getElementById('finalText').textContent = finalData.text || '';
-            document.getElementById('finalDate').textContent = finalData.date || '';
-            document.getElementById('finalLocation').textContent = finalData.location || '';
-        }
+            // ========== NAVIGATION ==========
+            let currentIndex = 0, isPlaying = false, progressAnimation = null;
+            const DURATION = 5000;
 
-        // Envelope Personalization
-        if (window.eventData && window.eventData.envelope) {
-            const env = window.eventData.envelope;
-            if (env.front_text) document.getElementById('envelopeText').textContent = env.front_text;
-            if (env.seal) document.getElementById('envelopeSeal').textContent = env.seal;
-        }
+            function showChapter(index) {
+                const chaptersElements = document.querySelectorAll('.chapter');
+                const segments = document.querySelectorAll('.segment');
 
-        let currentIndex = 0, isPlaying = false, progressAnimation = null;
-        const DURATION = 5000;
-        const chapters = document.querySelectorAll('.chapter'), segments = document.querySelectorAll('.segment');
+                if (index < 0 || chaptersElements.length === 0) return;
+                if (progressAnimation) cancelAnimationFrame(progressAnimation);
 
-        const envelope = document.getElementById('envelope');
-        envelope.onclick = () => {
-            envelope.parentElement.classList.add('opened');
-            setTimeout(() => {
-                document.getElementById('mainWrapper').classList.add('show-card');
-                isPlaying = true;
-                showChapter(0);
-            }, 1000);
-        };
+                if (index >= chaptersElements.length) {
+                    document.getElementById('chaptersContainer').style.display = 'none';
+                    document.getElementById('rsvpSection').style.display = 'flex';
+                    document.getElementById('progressBar').style.visibility = 'hidden';
+                    isPlaying = false;
+                    return;
+                }
 
-        function showChapter(index) {
-            if (index < 0) return;
-            if (progressAnimation) cancelAnimationFrame(progressAnimation);
-            if (index >= storyChapters.length) {
-                container.style.display = 'none'; rsvpSection.style.display = 'flex';
-                progressBar.style.visibility = 'hidden'; isPlaying = false; return;
+                document.getElementById('chaptersContainer').style.display = 'flex';
+                document.getElementById('rsvpSection').style.display = 'none';
+                document.getElementById('progressBar').style.visibility = 'visible';
+
+                chaptersElements.forEach((c, i) => c.classList.toggle('active', i === index));
+                segments.forEach((s, i) => {
+                    s.classList.toggle('done', i < index);
+                    const fill = s.querySelector('.segment-fill');
+                    if (fill) fill.style.width = i < index ? '100%' : '0%';
+                });
+
+                currentIndex = index;
+                if (isPlaying) startFill(index);
             }
-            container.style.display = 'flex'; rsvpSection.style.display = 'none'; progressBar.style.visibility = 'visible';
-            chapters.forEach((c, i) => c.classList.toggle('active', i === index));
-            segments.forEach((s, i) => {
-                s.classList.toggle('done', i < index);
-                const fill = s.querySelector('.segment-fill'); fill.style.width = i < index ? '100%' : '0%';
-            });
-            currentIndex = index; if (isPlaying) startFill(index);
-        }
 
-        function startFill(index) {
-            const fill = segments[index].querySelector('.segment-fill');
-            const start = performance.now();
-            function animate(now) {
-                const p = Math.min(((now - start) / DURATION) * 100, 100);
-                fill.style.width = p + '%';
-                if (p < 100) progressAnimation = requestAnimationFrame(animate);
-                else showChapter(currentIndex + 1);
+            function startFill(index) {
+                const segments = document.querySelectorAll('.segment');
+                if (!segments[index]) return;
+                const fill = segments[index].querySelector('.segment-fill');
+                const start = performance.now();
+                function animate(now) {
+                    const p = Math.min(((now - start) / DURATION) * 100, 100);
+                    fill.style.width = p + '%';
+                    if (p < 100) progressAnimation = requestAnimationFrame(animate);
+                    else showChapter(currentIndex + 1);
+                }
+                progressAnimation = requestAnimationFrame(animate);
             }
-            progressAnimation = requestAnimationFrame(animate);
-        }
 
-        document.getElementById('goNext').onclick = document.getElementById('btnNext').onclick = () => showChapter(currentIndex + 1);
-        document.getElementById('goPrev').onclick = document.getElementById('btnPrev').onclick = () => { if(currentIndex > 0) showChapter(currentIndex - 1); };
-        document.getElementById('btnPlay').onclick = () => {
-            isPlaying = !isPlaying; document.getElementById('btnPlay').textContent = isPlaying ? '⏸️' : '▶️';
-            if (isPlaying) showChapter(currentIndex); else if (progressAnimation) cancelAnimationFrame(progressAnimation);
-        };
-    })();
-</script>
+            // ========== ÉVÉNEMENTS ==========
+            document.getElementById('envelope').onclick = () => {
+                document.getElementById('envelopeWrapper').classList.add('opened');
+                setTimeout(() => {
+                    document.getElementById('mainWrapper').classList.add('show-card');
+                    isPlaying = true;
+                    showChapter(0);
+                }, 1000);
+            };
+
+            document.getElementById('goNext').onclick = document.getElementById('btnNext').onclick = () => showChapter(currentIndex + 1);
+            document.getElementById('goPrev').onclick = document.getElementById('btnPrev').onclick = () => { if (currentIndex > 0) showChapter(currentIndex - 1); };
+            
+            document.getElementById('btnPlay').onclick = () => {
+                isPlaying = !isPlaying;
+                document.getElementById('btnPlay').textContent = isPlaying ? '⏸️' : '▶️';
+                if (isPlaying) showChapter(currentIndex);
+                else if (progressAnimation) cancelAnimationFrame(progressAnimation);
+            };
+
+            // ========== FORMULAIRE RSVP (Vers le Backend) ==========
+            document.getElementById('rsvpForm').onsubmit = async function (e) {
+                e.preventDefault();
+                const btn = e.target.querySelector('button');
+                btn.disabled = true;
+                btn.textContent = 'Envoi...';
+
+                const guestId = window.location.pathname.split('/').pop();
+                const data = {
+                    rsvp: document.getElementById('rsvpPresence').value,
+                    message: document.getElementById('rsvpMessage').value,
+                    guest_id: guestId
+                };
+
+                try {
+                    const response = await fetch('/api/rsvp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        document.getElementById('rsvpForm').style.display = 'none';
+                        document.getElementById('rsvpMerci').style.display = 'block';
+                    } else {
+                        alert('Une erreur est survenue, veuillez réessayer.');
+                        btn.disabled = false;
+                        btn.textContent = 'Confirmer ✨';
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Erreur de connexion.');
+                    btn.disabled = false;
+                }
+            };
+
+            initInvitation();
+        })();
+    </script>
 </body>
+
 </html>

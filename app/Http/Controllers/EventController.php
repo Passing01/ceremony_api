@@ -126,23 +126,29 @@ class EventController extends Controller
                 $title = $processedInput['title'] ?? $request->title ?? 'Sans titre';
                 $invitationText = $processedInput['invitation_text'] ?? $request->invitation_text ?? '';
                 
-                // Flutter data often has a double 'data' nesting: $processedInput['data']['data']
-                $customData = $processedInput['data'] ?? [];
-                if (isset($customData['data']) && is_array($customData['data'])) {
-                    $customData = $customData['data'];
-                }
+                // Extraction robuste des données
+                // On fusionne tout ce qui se trouve à la racine et dans le sous-dossier 'data'
+                $rawPayload = $processedInput['data'] ?? [];
+                $customData = $rawPayload;
                 
-                // Explicitly handle cover_image if present at any root
-                if (isset($processedInput['cover_image'])) {
-                    $customData['cover_image'] = $processedInput['cover_image'];
-                }
-                if (isset($processedInput['data']['cover_image'])) {
-                    $customData['cover_image'] = $processedInput['data']['cover_image'];
+                if (isset($rawPayload['data']) && is_array($rawPayload['data'])) {
+                    $customData = array_merge($customData, $rawPayload['data']);
+                    unset($customData['data']); // On enlève le doublon
                 }
 
-                $eventDate = $request->input('event_date') ?? now();
+                // Récupération des infos de base
+                $title = $processedInput['title'] ?? $rawPayload['title'] ?? 'Sans titre';
+                $invitationText = $processedInput['invitation_text'] ?? $rawPayload['invitation_text'] ?? '';
+                $eventDate = $processedInput['event_date'] ?? $rawPayload['event_date'] ?? now();
 
-                \Illuminate\Support\Facades\Log::info('Attempting Event::create');
+                // Gestion de la cover_image
+                if (isset($processedInput['cover_image'])) $customData['cover_image'] = $processedInput['cover_image'];
+
+                \Illuminate\Support\Facades\Log::info('FINAL CUSTOM DATA TO SAVE', [
+                    'has_ch1' => isset($customData['ch1']),
+                    'keys' => array_keys($customData)
+                ]);
+
                 $event = Event::create([
                     'owner_id' => $user->id,
                     'template_id' => $request->template_id,

@@ -96,21 +96,21 @@ class EventController extends Controller
                 // Merge data
                 $customData = $request->input('custom_data', []);
                 if (is_string($customData)) $customData = json_decode($customData, true) ?? [];
-                // Recursive function to handle nested file uploads
-                $processNestedFiles = function ($array, $prefix = '') use (&$processNestedFiles, $request) {
+                // Log de debug pour voir TOUT ce qui arrive
+                \Illuminate\Support\Facades\Log::info('RAW INPUT RECEIVED', $request->all());
+
+                // 1. Fonction récursive pour traiter les fichiers (DOT notation)
+                $processFiles = function ($array, $prefix = '') use (&$processFiles, $request) {
                     $result = [];
                     foreach ($array as $key => $value) {
                         $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
-                        
                         $file = $request->file($fullKey);
+                        
                         if ($file) {
                             $actualFile = is_array($file) ? reset($file) : $file;
-                            if ($actualFile instanceof \Illuminate\Http\UploadedFile) {
-                                $path = $actualFile->store('events/media', 'public');
-                                $result[$key] = $path;
-                            }
+                            $result[$key] = $actualFile->store('events/media', 'public');
                         } elseif (is_array($value)) {
-                            $result[$key] = $processNestedFiles($value, $fullKey);
+                            $result[$key] = $processFiles($value, $fullKey);
                         } else {
                             $result[$key] = $value;
                         }
@@ -118,31 +118,35 @@ class EventController extends Controller
                     return $result;
                 };
 
-                // Get all data from request and process files
+                // 2. Récupérer les données brutes
                 $allInput = $request->all();
-                $processedInput = $processNestedFiles($allInput);
                 
-                // Extract core data
-                $title = $processedInput['title'] ?? $request->title ?? 'Sans titre';
-                $invitationText = $processedInput['invitation_text'] ?? $request->invitation_text ?? '';
-                
-                // Extraction robuste des données
-                // On fusionne tout ce qui se trouve à la racine et dans le sous-dossier 'data'
-                $rawPayload = $processedInput['data'] ?? [];
-                $customData = $rawPayload;
-                
-                if (isset($rawPayload['data']) && is_array($rawPayload['data'])) {
-                    $customData = array_merge($customData, $rawPayload['data']);
-                    unset($customData['data']); // On enlève le doublon
+                // 3. Cas critique : Si 'data' est vide mais qu'on a des clés 'data[...]'
+                if (empty($allInput['data'])) {
+                    foreach ($allInput as $key => $val) {
+                        if (str_starts_with($key, 'data[')) {
+                            // Transformation précise : data[ch1][title] -> ch1.title
+                            $cleanKey = str_replace('data[', '', $key); // ch1][title]
+                            $cleanKey = str_replace(']', '', $cleanKey); // ch1[title
+                            $cleanKey = str_replace('[', '.', $cleanKey); // ch1.title
+                            
+                            \Illuminate\Support\Arr::set($allInput['data'], $cleanKey, $val);
+                        }
+                    }
                 }
 
-                // Récupération des infos de base
-                $title = $processedInput['title'] ?? $rawPayload['title'] ?? 'Sans titre';
-                $invitationText = $processedInput['invitation_text'] ?? $rawPayload['invitation_text'] ?? '';
-                $eventDate = $processedInput['event_date'] ?? $rawPayload['event_date'] ?? now();
+                $processedInput = $processFiles($allInput);
+                $customData = $processedInput['data'] ?? [];
 
-                // Gestion de la cover_image
-                if (isset($processedInput['cover_image'])) $customData['cover_image'] = $processedInput['cover_image'];
+                // Si double nesting data.data
+                if (isset($customData['data']) && is_array($customData['data'])) {
+                    $customData = array_merge($customData, $customData['data']);
+                    unset($customData['data']);
+                }
+
+                $title = $processedInput['title'] ?? $customData['title'] ?? 'Sans titre';
+                $invitationText = $processedInput['invitation_text'] ?? $customData['invitation_text'] ?? '';
+                $eventDate = $processedInput['event_date'] ?? $customData['event_date'] ?? now();
 
                 \Illuminate\Support\Facades\Log::info('FINAL CUSTOM DATA TO SAVE', [
                     'has_ch1' => isset($customData['ch1']),

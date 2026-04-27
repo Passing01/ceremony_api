@@ -99,39 +99,23 @@ class EventController extends Controller
                 // Log de debug pour voir TOUT ce qui arrive
                 \Illuminate\Support\Facades\Log::info('RAW INPUT RECEIVED', $request->all());
 
-                // 1. Extraction directe des données
-                $customData = $request->input('data', []);
+                // 1. Fusionner TOUT (textes + fichiers) dans un seul tableau récursif
+                $allInput = array_replace_recursive($request->all(), $request->allFiles());
+                $customData = $allInput['data'] ?? [];
                 if (is_string($customData)) $customData = json_decode($customData, true) ?? [];
 
-                $processFiles = function ($array, $prefix = 'data') use (&$processFiles, $request) {
-                    $result = [];
-                    if (!is_array($array)) return $result;
-                    foreach ($array as $key => $value) {
-                        $fullKey = "{$prefix}.{$key}";
-                        
-                        // Si c'est un tableau (comme ch1, ch2), on descend dedans D'ABORD
-                        if (is_array($value)) {
-                            $result[$key] = $processFiles($value, $fullKey);
-                        } else {
-                            // Sinon on regarde si c'est un fichier
-                            $file = $request->file($fullKey);
-                            if ($file) {
-                                $getActualFile = function($f) use (&$getActualFile) {
-                                    if ($f instanceof \Illuminate\Http\UploadedFile) return $f;
-                                    if (is_array($f)) return $getActualFile(reset($f));
-                                    return null;
-                                };
-                                $actualFile = $getActualFile($file);
-                                $result[$key] = $actualFile ? $actualFile->store('events/media', 'public') : $value;
-                            } else {
-                                $result[$key] = $value;
-                            }
-                        }
+                // 2. Fonction récursive simple pour sauvegarder les fichiers partout où ils sont
+                $saveFilesRecursively = function ($item) use (&$saveFilesRecursively) {
+                    if ($item instanceof \Illuminate\Http\UploadedFile) {
+                        return $item->store('events/media', 'public');
                     }
-                    return $result;
+                    if (is_array($item)) {
+                        return array_map($saveFilesRecursively, $item);
+                    }
+                    return $item;
                 };
 
-                $customData = $processFiles($customData);
+                $customData = $saveFilesRecursively($customData);
 
                 // 3. Infos de base
                 $title = $request->input('title') ?? $customData['title'] ?? 'Sans titre';

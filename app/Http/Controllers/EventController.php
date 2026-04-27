@@ -99,11 +99,6 @@ class EventController extends Controller
                 // Log de debug pour voir TOUT ce qui arrive
                 \Illuminate\Support\Facades\Log::info('RAW INPUT RECEIVED', $request->all());
 
-                // 1. Fonction récursive pour traiter les fichiers (DOT notation)
-                $processFiles = function ($array, $prefix = '') use (&$processFiles, $request) {
-                    $result = [];
-                    foreach ($array as $key => $value) {
-                        $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
                 // 1. Extraction directe des données
                 $customData = $request->input('data', []);
                 if (is_string($customData)) $customData = json_decode($customData, true) ?? [];

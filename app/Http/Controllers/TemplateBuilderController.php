@@ -286,7 +286,8 @@ class TemplateBuilderController extends Controller
         
         \Illuminate\Support\Facades\Log::info('INJECTION DEBUG', [
             'chapters_count' => count($dataArray),
-            'placeholder_found' => str_contains($html, 'const chaptersData = [];'),
+            'first_chapter_media' => $dataArray[0]['media'] ?? 'N/A',
+            'json_sample' => substr($chaptersJson, 0, 200) . '...'
         ]);
 
         $html = preg_replace('/const chaptersData\s*=\s*\[\s*\]\s*;?/', "const chaptersData = $chaptersJson;", $html, -1, $count);

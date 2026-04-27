@@ -107,8 +107,17 @@ class EventController extends Controller
                         $file = $request->file($fullKey);
                         
                         if ($file) {
-                            $actualFile = is_array($file) ? reset($file) : $file;
-                            $result[$key] = $actualFile->store('events/media', 'public');
+                            // Sécurité maximale : on cherche l'objet fichier récursivement si c'est un tableau
+                            $getActualFile = function($f) use (&$getActualFile) {
+                                if ($f instanceof \Illuminate\Http\UploadedFile) return $f;
+                                if (is_array($f)) return $getActualFile(reset($f));
+                                return null;
+                            };
+                            
+                            $actualFile = $getActualFile($file);
+                            if ($actualFile) {
+                                $result[$key] = $actualFile->store('events/media', 'public');
+                            }
                         } elseif (is_array($value)) {
                             $result[$key] = $processFiles($value, $fullKey);
                         } else {

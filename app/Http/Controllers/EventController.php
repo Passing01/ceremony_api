@@ -104,20 +104,25 @@ class EventController extends Controller
                     $result = [];
                     foreach ($array as $key => $value) {
                         $fullKey = $prefix ? "{$prefix}.{$key}" : $key;
+                // 1. Extraction directe des données
+                $customData = $request->input('data', []);
+                if (is_string($customData)) $customData = json_decode($customData, true) ?? [];
+
+                // 2. Traiter les fichiers spécifiquement dans 'data'
+                $processFiles = function ($array, $prefix = 'data') use (&$processFiles, $request) {
+                    $result = [];
+                    if (!is_array($array)) return $result;
+                    foreach ($array as $key => $value) {
+                        $fullKey = "{$prefix}.{$key}";
                         $file = $request->file($fullKey);
-                        
                         if ($file) {
-                            // Sécurité maximale : on cherche l'objet fichier récursivement si c'est un tableau
                             $getActualFile = function($f) use (&$getActualFile) {
                                 if ($f instanceof \Illuminate\Http\UploadedFile) return $f;
                                 if (is_array($f)) return $getActualFile(reset($f));
                                 return null;
                             };
-                            
                             $actualFile = $getActualFile($file);
-                            if ($actualFile) {
-                                $result[$key] = $actualFile->store('events/media', 'public');
-                            }
+                            $result[$key] = $actualFile ? $actualFile->store('events/media', 'public') : $value;
                         } elseif (is_array($value)) {
                             $result[$key] = $processFiles($value, $fullKey);
                         } else {
@@ -127,43 +132,12 @@ class EventController extends Controller
                     return $result;
                 };
 
-                // 2. Récupérer les données brutes
-                $allInput = $request->all();
-                
-                // 3. Cas critique : Si 'data' est vide mais qu'on a des clés 'data[...]'
-                if (empty($allInput['data'])) {
-                    foreach ($allInput as $key => $val) {
-                        if (str_starts_with($key, 'data[')) {
-                            // Transformation précise : data[ch1][title] -> ch1.title
-                            $cleanKey = str_replace('data[', '', $key); // ch1][title]
-                            $cleanKey = str_replace(']', '', $cleanKey); // ch1[title
-                            $cleanKey = str_replace('[', '.', $cleanKey); // ch1.title
-                            
-                            \Illuminate\Support\Arr::set($allInput['data'], $cleanKey, $val);
-                        }
-                    }
-                }
+                $customData = $processFiles($customData);
 
-                $processedInput = $processFiles($allInput);
-                $customData = $processedInput['data'] ?? [];
-                
-                // Sécurité : forcer customData en tableau
-                if (is_string($customData)) {
-                    $customData = json_decode($customData, true) ?? [];
-                }
-                if (!is_array($customData)) {
-                    $customData = [];
-                }
-
-                // Si double nesting data.data
-                if (isset($customData['data']) && is_array($customData['data'])) {
-                    $customData = array_merge($customData, $customData['data']);
-                    unset($customData['data']);
-                }
-
-                $title = $processedInput['title'] ?? $customData['title'] ?? 'Sans titre';
-                $invitationText = $processedInput['invitation_text'] ?? $customData['invitation_text'] ?? '';
-                $eventDate = $processedInput['event_date'] ?? $customData['event_date'] ?? now();
+                // 3. Infos de base
+                $title = $request->input('title') ?? $customData['title'] ?? 'Sans titre';
+                $invitationText = $request->input('invitation_text') ?? $customData['invitation_text'] ?? '';
+                $eventDate = $request->input('event_date') ?? now();
 
                 \Illuminate\Support\Facades\Log::info('FINAL CUSTOM DATA TO SAVE', [
                     'has_ch1' => isset($customData['ch1']),

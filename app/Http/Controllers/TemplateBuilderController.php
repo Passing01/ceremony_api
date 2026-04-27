@@ -268,6 +268,10 @@ class TemplateBuilderController extends Controller
             window.apiBaseUrl = '{$baseUrl}';
         </script>";
         $html = preg_replace('/<head([^>]*)>/i', '<head$1>' . $headScript, $html, 1);
+        
+        // Injecter Chapters pour Template 1 et 2 (Injection robuste par Regex)
+        $chaptersJson = json_encode($dataArray, JSON_UNESCAPED_UNICODE);
+        $html = preg_replace('/const chaptersData\s*=\s*\[\s*\]\s*;?/', "const chaptersData = $chaptersJson;", $html);
 
         // ============================================================
         // 5. Script DOM Intelligent pour templates statiques (1, 4, 5)

@@ -272,32 +272,40 @@ class TemplateBuilderController extends Controller
         ], JSON_UNESCAPED_UNICODE);
 
         // ============================================================
-        // 4. Injection ULTIME (Au tout début du fichier)
+        // DEBUGGING MASSIF : VOIR TOUTE LA CHAÎNE DE DONNÉES
         // ============================================================
+        \Illuminate\Support\Facades\Log::info('--- DEBUG TEMPLATE START ---', [
+            'event_id' => $event->id,
+            'template_id' => $event->template_id,
+            'raw_custom_data_from_db' => $customData
+        ]);
+
         $sliderChapters = array_values(array_filter($dataArray, function($item) {
             return isset($item['number']) || isset($item['title']) || isset($item['text']);
         }));
         
-        \Illuminate\Support\Facades\Log::info('DIAGNOSTIC FINAL', [
-            'event_id' => $event->id,
-            'custom_data_keys' => array_keys($customData),
+        \Illuminate\Support\Facades\Log::info('--- DEBUG MAPPING RESULT ---', [
             'dataArray_count' => count($dataArray),
-            'slider_chapters_count' => count($sliderChapters)
+            'slider_chapters_count' => count($sliderChapters),
+            'first_chapter_data' => $sliderChapters[0] ?? 'NONE'
         ]);
 
         $baseUrl = url('/');
         $finalJson = json_encode([
             'token' => $token,
-            'event' => $domReplacements, // contient hero, intro, etc.
+            'event' => $domReplacements,
             'chapters' => $prefixStorage($sliderChapters),
             'apiBaseUrl' => $baseUrl
         ], JSON_UNESCAPED_UNICODE);
 
         // Injection au tout début pour être 100% sûr
-        $injectionScript = "<script>window.eventData = {$finalJson}; window.chaptersData = window.eventData.chapters;</script>";
+        $injectionScript = "<!-- DEBUG INJECTION --><script>window.eventData = {$finalJson}; window.chaptersData = window.eventData.chapters;</script>";
         $html = $injectionScript . $html;
         
-        \Illuminate\Support\Facades\Log::info('INJECTION SUCCESSFUL AT TOP');
+        \Illuminate\Support\Facades\Log::info('--- DEBUG FINAL HTML SAMPLE ---', [
+            'html_start' => substr($html, 0, 500)
+        ]);
+        \Illuminate\Support\Facades\Log::info('--- DEBUG TEMPLATE END ---');
 
         // ============================================================
         // 5. Script DOM Intelligent pour templates statiques (1, 4, 5)

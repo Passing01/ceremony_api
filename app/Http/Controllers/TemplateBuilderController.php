@@ -268,6 +268,7 @@ class TemplateBuilderController extends Controller
             'location_civile' => $prefixStorage($raw['location_civile'] ?? []),
             'location_reception' => $prefixStorage($raw['location_reception'] ?? []),
             'dresscode'     => $prefixStorage($raw['dresscode'] ?? []),
+            'chapters'      => $prefixStorage($sliderChapters ?? []),
         ], JSON_UNESCAPED_UNICODE);
 
         // ============================================================
@@ -280,6 +281,10 @@ class TemplateBuilderController extends Controller
             window.apiBaseUrl = '{$baseUrl}';
         </script>";
         $html = preg_replace('/<head([^>]*)>/i', '<head$1>' . $headScript, $html, 1);
+        
+        \Illuminate\Support\Facades\Log::info('GLOBAL DATA INJECTED', [
+            'chapters_in_data' => count($sliderChapters ?? [])
+        ]);
         
         // 4. Injection du Slider (Cible le commentaire indispensable)
         $sliderChapters = array_values(array_filter($dataArray, function($item) {

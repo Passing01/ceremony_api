@@ -401,14 +401,22 @@
             // ========== FONCTION D'INITIALISATION ==========
             function initInvitation() {
                 try {
-                    // Utiliser chaptersData injecté par le serveur ou le fallback
-                    const chapters = (typeof chaptersData !== 'undefined' && chaptersData.length > 0) 
-                        ? chaptersData 
-                        : [
+                    const eventData = window.eventData || {};
+                    
+                    // Priorité 1: Chapters dans eventData (Injecté par le serveur)
+                    // Priorité 2: chaptersData (Ancienne méthode)
+                    // Priorité 3: Fallback statique
+                    let chapters = [];
+                    if (eventData.chapters && eventData.chapters.length > 0) {
+                        chapters = eventData.chapters;
+                    } else if (typeof chaptersData !== 'undefined' && chaptersData.length > 0) {
+                        chapters = chaptersData;
+                    } else {
+                        chapters = [
                             { number: "Chapitre I", title: "Le premier regard", text: "C'était un soir d'automne...", date: "12 octobre 2020", media: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800" }
                         ];
+                    }
 
-                    const eventData = window.eventData || {};
                     console.log('📋 Données chargées :', { chapters, eventData });
 
                     // Appliquer la configuration de l'enveloppe

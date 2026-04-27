@@ -271,7 +271,19 @@ class TemplateBuilderController extends Controller
         
         // Injecter Chapters pour Template 1 et 2 (Injection robuste par Regex)
         $chaptersJson = json_encode($dataArray, JSON_UNESCAPED_UNICODE);
-        $html = preg_replace('/const chaptersData\s*=\s*\[\s*\]\s*;?/', "const chaptersData = $chaptersJson;", $html);
+        $chaptersCount = count($dataArray);
+        
+        \Illuminate\Support\Facades\Log::info('INJECTION DEBUG', [
+            'chapters_count' => $chaptersCount,
+            'placeholder_found' => str_contains($html, 'const chaptersData = [];'),
+            'template_id' => $event->template_id
+        ]);
+
+        $html = preg_replace('/const chaptersData\s*=\s*\[\s*\]\s*;?/', "const chaptersData = $chaptersJson;", $html, -1, $count);
+        
+        \Illuminate\Support\Facades\Log::info('INJECTION RESULT', [
+            'replacements_made' => $count
+        ]);
 
         // ============================================================
         // 5. Script DOM Intelligent pour templates statiques (1, 4, 5)
